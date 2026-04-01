@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
-/// Central theme configuration for HabitWallet.
+/// Central theme configuration for Thrifty.
 ///
 /// Implements Material 3 with a custom professional design system.
 /// Features AMOLED dark mode and sophisticated light mode.

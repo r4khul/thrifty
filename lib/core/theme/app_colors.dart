@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Centralized color system for HabitWallet.
+/// Centralized color system for Thrifty.
 ///
 /// Designed with a minimalist, AMOLED-friendly aesthetic.
 /// Follows Material 3 color system patterns.

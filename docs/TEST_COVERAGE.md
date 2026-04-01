@@ -1,7 +1,7 @@
 # Test Coverage Summary
 
 ## Overview
-This document provides a comprehensive overview of the test coverage for the Habit Wallet project.
+This document provides a comprehensive overview of the test coverage for the Thrifty project.
 
 ## Test Statistics
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:habitwallet/core/providers/shared_preferences_provider.dart';
+import 'package:thrifty/core/providers/shared_preferences_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'theme_provider.g.dart';

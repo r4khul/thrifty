@@ -2,7 +2,7 @@
 
 ## Overview
 
-Habit Wallet is built on a layered, feature-driven architecture that emphasizes separation of concerns, testability, and maintainability. The application follows Clean Architecture principles adapted for Flutter, with a strong focus on offline-first capabilities and eventual consistency with remote data sources.
+Thrifty is built on a layered, feature-driven architecture that emphasizes separation of concerns, testability, and maintainability. The application follows Clean Architecture principles adapted for Flutter, with a strong focus on offline-first capabilities and eventual consistency with remote data sources.
 
 ## Core Architectural Principles
 
@@ -404,7 +404,7 @@ class AppTheme {
 
 ### System Brightness Tracking
 ```dart
-class _HabitWalletAppState extends ConsumerState<HabitWalletApp>
+class _ThriftyAppState extends ConsumerState<ThriftyApp>
     with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() {
@@ -582,4 +582,4 @@ MigrationStrategy get migration {
 
 ## Conclusion
 
-Habit Wallet's architecture balances pragmatism with best practices. The offline-first approach ensures reliability, feature modularity enables parallel development, and Riverpod provides type-safe state management. The system is designed for independent feature evolution while maintaining consistency through shared infrastructure in the core layer.
+Thrifty's architecture balances pragmatism with best practices. The offline-first approach ensures reliability, feature modularity enables parallel development, and Riverpod provides type-safe state management. The system is designed for independent feature evolution while maintaining consistency through shared infrastructure in the core layer.

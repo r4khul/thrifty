@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../data/category_repository_provider.dart';

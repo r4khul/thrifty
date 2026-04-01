@@ -1,5 +1,5 @@
-import 'package:habitwallet/features/transactions/domain/transaction_entity.dart';
-import 'package:habitwallet/features/transactions/domain/transaction_summary.dart';
+import 'package:thrifty/features/transactions/domain/transaction_entity.dart';
+import 'package:thrifty/features/transactions/domain/transaction_summary.dart';
 
 /// Pure logic for calculating transaction summaries.
 class TransactionSummaryCalculator {

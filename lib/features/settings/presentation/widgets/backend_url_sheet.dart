@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habitwallet/core/providers/network_providers.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/providers/network_providers.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 
 class BackendUrlSheet extends ConsumerStatefulWidget {
   const BackendUrlSheet({super.key});

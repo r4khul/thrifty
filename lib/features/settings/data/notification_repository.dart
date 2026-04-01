@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:habitwallet/core/providers/shared_preferences_provider.dart';
-import 'package:habitwallet/features/settings/domain/notification_settings.dart';
+import 'package:thrifty/core/providers/shared_preferences_provider.dart';
+import 'package:thrifty/features/settings/domain/notification_settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

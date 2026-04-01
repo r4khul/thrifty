@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:habitwallet/features/auth/domain/auth_session.dart';
+import 'package:thrifty/features/auth/domain/auth_session.dart';
 
 void main() {
   group('AuthSession', () {

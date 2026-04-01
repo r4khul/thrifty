@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/icons/app_icon_without_bg.png" alt="Habit Wallet Logo" width="150"/>
+  <img src="assets/icons/app_icon_without_bg.png" alt="Thrifty Logo" width="150"/>
 </p>
 
-# Habit Wallet
+# Thrifty
 
-![Flutter CI](https://github.com/r4khul/habitwallet/actions/workflows/flutter-ci.yml/badge.svg)
+![Flutter CI](https://github.com/r4khul/thrifty/actions/workflows/flutter-ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/Coverage-80.5%25-brightgreen)
-![Downloads](https://img.shields.io/github/downloads/r4khul/habitwallet/latest/total?logo=android&logoColor=white&label=Downloads&color=3DDC84&style=flat)
-![GitHub stars](https://img.shields.io/github/stars/r4khul/habitwallet?logo=github&style=flat-square)
+![Downloads](https://img.shields.io/github/downloads/r4khul/thrifty/latest/total?logo=android&logoColor=white&label=Downloads&color=3DDC84&style=flat)
+![GitHub stars](https://img.shields.io/github/stars/r4khul/thrifty?logo=github&style=flat-square)
 
 > 📊 **Test Coverage**: 69 tests passing • [View detailed coverage report](docs/TEST_COVERAGE.md)
 
@@ -15,7 +15,7 @@ A comprehensive finance management application built with Flutter. This applicat
 
 ## Project Overview
 
-Habit Wallet is a comprehensive financial tracking application designed to help users manage their expenses and income efficiently. The app solves the problem of fragmented financial data by providing a unified platform that works offline and syncs when connectivity is available.
+Thrifty is a comprehensive financial tracking application designed to help users manage their expenses and income efficiently. The app solves the problem of fragmented financial data by providing a unified platform that works offline and syncs when connectivity is available.
 
 ### Key Features
 
@@ -94,8 +94,8 @@ For a deeper dive into architectural decisions and data flow, see [docs/ARCHITEC
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/r4khul/habitwallet.git
-cd habitwallet
+git clone https://github.com/r4khul/thrifty.git
+cd thrifty
 ```
 
 ### 2. Install Dependencies

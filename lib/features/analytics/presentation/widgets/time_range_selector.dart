@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:habitwallet/core/theme/app_colors.dart';
-import 'package:habitwallet/core/theme/app_typography.dart';
+import 'package:thrifty/core/theme/app_colors.dart';
+import 'package:thrifty/core/theme/app_typography.dart';
 
 import '../../domain/financial_data_models.dart';
 

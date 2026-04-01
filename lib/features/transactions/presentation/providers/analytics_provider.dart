@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:habitwallet/core/widgets/charts/chart_types.dart';
-import 'package:habitwallet/features/transactions/domain/transaction_entity.dart';
-import 'package:habitwallet/features/transactions/presentation/providers/transaction_providers.dart';
+import 'package:thrifty/core/widgets/charts/chart_types.dart';
+import 'package:thrifty/features/transactions/domain/transaction_entity.dart';
+import 'package:thrifty/features/transactions/presentation/providers/transaction_providers.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

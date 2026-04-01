@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habitwallet/core/util/formatting_utils.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/util/formatting_utils.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -38,7 +38,7 @@ class TransactionsPage extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('HabitWallet.'),
+            const Text('Thrifty.'),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: transactionsAsync.when(

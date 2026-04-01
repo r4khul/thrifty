@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habitwallet/core/providers/locale_provider.dart';
-import 'package:habitwallet/core/theme/app_colors.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/providers/locale_provider.dart';
+import 'package:thrifty/core/theme/app_colors.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 import '../../domain/language.dart';
 
 class LanguageSelectorSheet extends ConsumerWidget {

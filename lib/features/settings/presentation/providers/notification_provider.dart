@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:habitwallet/core/providers/locale_provider.dart';
-import 'package:habitwallet/core/util/notification_service.dart';
-import 'package:habitwallet/features/settings/data/notification_repository.dart';
-import 'package:habitwallet/features/settings/domain/notification_settings.dart';
-import 'package:habitwallet/features/transactions/presentation/providers/transaction_providers.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/providers/locale_provider.dart';
+import 'package:thrifty/core/util/notification_service.dart';
+import 'package:thrifty/features/settings/data/notification_repository.dart';
+import 'package:thrifty/features/settings/domain/notification_settings.dart';
+import 'package:thrifty/features/transactions/presentation/providers/transaction_providers.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'notification_provider.g.dart';

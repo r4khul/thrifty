@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Centralized typography system for HabitWallet.
+/// Centralized typography system for Thrifty.
 ///
 /// Uses 'Chillax' font for a modern, high-end feel.
 /// Optimized for financial data and clear hierarchy.

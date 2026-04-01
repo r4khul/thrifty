@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habitwallet/core/providers/shared_preferences_provider.dart';
-import 'package:habitwallet/core/providers/sync_provider.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/providers/shared_preferences_provider.dart';
+import 'package:thrifty/core/providers/sync_provider.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app_router.dart';
@@ -15,7 +15,7 @@ import 'core/theme/app_theme.dart';
 import 'core/util/notification_service.dart';
 import 'features/settings/presentation/providers/notification_provider.dart';
 
-/// Entry point of the Habit Wallet application.
+/// Entry point of the Thrifty application.
 /// Handles initialization of services, native splash screen, and root widget setup.
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -31,19 +31,19 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const HabitWalletApp(),
+      child: const ThriftyApp(),
     ),
   );
 }
 
-class HabitWalletApp extends ConsumerStatefulWidget {
-  const HabitWalletApp({super.key});
+class ThriftyApp extends ConsumerStatefulWidget {
+  const ThriftyApp({super.key});
 
   @override
-  ConsumerState<HabitWalletApp> createState() => _HabitWalletAppState();
+  ConsumerState<ThriftyApp> createState() => _ThriftyAppState();
 }
 
-class _HabitWalletAppState extends ConsumerState<HabitWalletApp>
+class _ThriftyAppState extends ConsumerState<ThriftyApp>
     with WidgetsBindingObserver {
   Brightness? _platformBrightness;
 
@@ -94,7 +94,7 @@ class _HabitWalletAppState extends ConsumerState<HabitWalletApp>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppTheme.getOverlayStyle(isDark: isDarkMode),
       child: MaterialApp.router(
-        title: 'Habit Wallet',
+        title: 'Thrifty',
         debugShowCheckedModeBanner: false,
         routerConfig: routerConfig,
         themeMode: themeMode,

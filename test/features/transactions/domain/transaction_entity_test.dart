@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:habitwallet/features/transactions/domain/transaction_entity.dart';
+import 'package:thrifty/features/transactions/domain/transaction_entity.dart';
 
 void main() {
   group('TransactionEntity', () {

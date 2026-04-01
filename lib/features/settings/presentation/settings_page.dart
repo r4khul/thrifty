@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habitwallet/core/providers/locale_provider.dart';
-import 'package:habitwallet/core/providers/network_providers.dart';
-import 'package:habitwallet/core/theme/app_colors.dart';
-import 'package:habitwallet/core/util/theme_extension.dart';
-import 'package:habitwallet/features/settings/domain/language.dart';
-import 'package:habitwallet/features/settings/presentation/providers/currency_provider.dart';
-import 'package:habitwallet/features/settings/presentation/providers/notification_provider.dart';
-import 'package:habitwallet/features/settings/presentation/widgets/backend_url_sheet.dart';
-import 'package:habitwallet/features/settings/presentation/widgets/currency_selector_sheet.dart';
-import 'package:habitwallet/features/settings/presentation/widgets/language_selector_sheet.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/providers/locale_provider.dart';
+import 'package:thrifty/core/providers/network_providers.dart';
+import 'package:thrifty/core/theme/app_colors.dart';
+import 'package:thrifty/core/util/theme_extension.dart';
+import 'package:thrifty/features/settings/domain/language.dart';
+import 'package:thrifty/features/settings/presentation/providers/currency_provider.dart';
+import 'package:thrifty/features/settings/presentation/providers/notification_provider.dart';
+import 'package:thrifty/features/settings/presentation/widgets/backend_url_sheet.dart';
+import 'package:thrifty/features/settings/presentation/widgets/currency_selector_sheet.dart';
+import 'package:thrifty/features/settings/presentation/widgets/language_selector_sheet.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});

@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:habitwallet/core/theme/app_colors.dart';
-import 'package:habitwallet/core/theme/app_typography.dart';
-import 'package:habitwallet/l10n/app_localizations.dart';
+import 'package:thrifty/core/theme/app_colors.dart';
+import 'package:thrifty/core/theme/app_typography.dart';
+import 'package:thrifty/l10n/app_localizations.dart';
 
 import '../../domain/financial_data_models.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:habitwallet/features/categories/domain/category_entity.dart';
+import 'package:thrifty/features/categories/domain/category_entity.dart';
 
 void main() {
   group('CategoryEntity', () {

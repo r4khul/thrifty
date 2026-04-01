@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:habitwallet/features/transactions/domain/transaction_entity.dart';
-import 'package:habitwallet/features/transactions/domain/transaction_summary_calculator.dart';
+import 'package:thrifty/features/transactions/domain/transaction_entity.dart';
+import 'package:thrifty/features/transactions/domain/transaction_summary_calculator.dart';
 
 void main() {
   group('TransactionSummaryCalculator', () {

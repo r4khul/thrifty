@@ -9,7 +9,7 @@ class AppLocalizationsTa extends AppLocalizations {
   AppLocalizationsTa([String locale = 'ta']) : super(locale);
 
   @override
-  String get appTitle => 'Habit Wallet';
+  String get appTitle => 'Thrifty';
 
   @override
   String get settings => 'அமைப்புகள்';
