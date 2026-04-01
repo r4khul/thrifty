@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thrifty/features/analytics/domain/financial_data_models.dart';
+import 'package:thrifty/features/analytics/presentation/widgets/category_donut_chart.dart';
 import 'package:thrifty/core/util/formatting_utils.dart';
 import 'package:thrifty/l10n/app_localizations.dart';
 
@@ -17,6 +19,7 @@ import '../../categories/presentation/widgets/category_assets.dart';
 import '../../profile/presentation/providers/user_profile_provider.dart';
 import '../data/transaction_repository_provider.dart';
 import '../domain/transaction_entity.dart';
+import 'providers/date_filter_provider.dart';
 import 'providers/transaction_providers.dart';
 import 'widgets/date_range_selector.dart';
 
@@ -29,6 +32,7 @@ class TransactionsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(filteredTransactionsProvider);
     final categoryMapAsync = ref.watch(categoryMapProvider);
+    final dateRangeFilter = ref.watch(dateFilterControllerProvider);
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final currencySymbol = ref.watch(currencySymbolProvider);
@@ -96,62 +100,81 @@ class TransactionsPage extends ConsumerWidget {
                     );
                   }
                   return categoryMapAsync.when(
-                    data: (categoryMap) => RefreshIndicator(
-                      key: const ValueKey('list'),
-                      onRefresh: () async {
-                        try {
-                          await ref
-                              .read(transactionRepositoryProvider)
-                              .syncWithRemote();
-                        } on Object catch (_) {
-                          // Fail silently or show toast
-                        }
-                      },
-                      child: RepaintBoundary(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          itemCount: transactions.length,
-                          itemExtent: 72,
-                          itemBuilder: (context, index) {
-                            final tx = transactions[index];
-                            final category = categoryMap[tx.categoryId];
-                            return Dismissible(
-                              key: Key(tx.id),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.error,
-                                ),
-                                child: const Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              confirmDismiss: (direction) =>
-                                  _showDeleteConfirmation(context, ref, tx),
-                              onDismissed: (direction) {
-                                ref
-                                    .read(
-                                      transactionControllerProvider.notifier,
-                                    )
-                                    .deleteTransaction(tx.id);
-                                ScaffoldMessenger.of(
-                                  context,
-                                ).hideCurrentSnackBar();
-                              },
-                              child: _TransactionTile(
-                                transaction: tx,
-                                category: category,
-                                currencySymbol: currencySymbol,
-                              ),
-                            );
-                          },
+                    data: (categoryMap) => Column(
+                      children: [
+                        _CashFlowSummarySection(
+                          transactions: transactions,
+                          categoryMap: categoryMap,
+                          currencySymbol: currencySymbol,
+                          activeFilterLabel: dateRangeFilter.label,
                         ),
-                      ),
+                        Expanded(
+                          child: RefreshIndicator(
+                            key: const ValueKey('list'),
+                            onRefresh: () async {
+                              try {
+                                await ref
+                                    .read(transactionRepositoryProvider)
+                                    .syncWithRemote();
+                              } on Object catch (_) {
+                                // Fail silently or show toast
+                              }
+                            },
+                            child: RepaintBoundary(
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                itemCount: transactions.length,
+                                itemExtent: 72,
+                                itemBuilder: (context, index) {
+                                  final tx = transactions[index];
+                                  final category = categoryMap[tx.categoryId];
+                                  return Dismissible(
+                                    key: Key(tx.id),
+                                    direction: DismissDirection.endToStart,
+                                    background: Container(
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                      ),
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.error,
+                                      ),
+                                      child: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    confirmDismiss: (direction) =>
+                                        _showDeleteConfirmation(
+                                          context,
+                                          ref,
+                                          tx,
+                                        ),
+                                    onDismissed: (direction) {
+                                      ref
+                                          .read(
+                                            transactionControllerProvider
+                                                .notifier,
+                                          )
+                                          .deleteTransaction(tx.id);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).hideCurrentSnackBar();
+                                    },
+                                    child: _TransactionTile(
+                                      transaction: tx,
+                                      category: category,
+                                      currencySymbol: currencySymbol,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     loading: () =>
                         const _LoadingState(key: ValueKey('loading_cats')),
@@ -213,6 +236,365 @@ class TransactionsPage extends ConsumerWidget {
             child: Text(l10n.delete),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CashFlowSummarySection extends StatelessWidget {
+  const _CashFlowSummarySection({
+    required this.transactions,
+    required this.categoryMap,
+    required this.currencySymbol,
+    required this.activeFilterLabel,
+  });
+
+  final List<TransactionEntity> transactions;
+  final Map<String, CategoryEntity> categoryMap;
+  final String currencySymbol;
+  final String activeFilterLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = context.isDarkMode;
+
+    var totalIncome = 0.0;
+    var totalExpense = 0.0;
+    final expenseByCategory = <String, double>{};
+
+    for (final tx in transactions) {
+      if (tx.isIncome) {
+        totalIncome += tx.amount;
+      } else {
+        final amount = tx.absoluteAmount;
+        totalExpense += amount;
+        expenseByCategory.update(
+          tx.categoryId,
+          (value) => value + amount,
+          ifAbsent: () => amount,
+        );
+      }
+    }
+
+    final net = totalIncome - totalExpense;
+    final categoryBreakdown = expenseByCategory.entries.map((entry) {
+      final category = categoryMap[entry.key];
+      final percentage = totalExpense == 0
+          ? 0.0
+          : (entry.value / totalExpense) * 100;
+
+      return CategorySpend(
+        categoryId: entry.key,
+        categoryName: category?.name ?? 'Unknown',
+        categoryIcon: category?.icon ?? 'category',
+        categoryColor: category?.color ?? AppColors.grey500.toARGB32(),
+        amount: entry.value,
+        percentage: percentage,
+      );
+    }).toList()
+      ..sort((a, b) => b.amount.compareTo(a.amount));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.24 : 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.incomeVsExpense,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          activeFilterLabel,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(color: AppColors.grey500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: totalExpense > 0
+                        ? () {
+                            showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              backgroundColor: Theme.of(context).canvasColor,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(24),
+                                ),
+                              ),
+                              builder: (context) => _WhereMoneyWentSheet(
+                                categoryBreakdown: categoryBreakdown,
+                                totalExpense: totalExpense,
+                                currencySymbol: currencySymbol,
+                              ),
+                            );
+                          }
+                        : null,
+                    icon: const Icon(Icons.pie_chart_outline_rounded),
+                    tooltip: l10n.whereYourMoneyGoes,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FlowMetricCard(
+                      label: l10n.income,
+                      value: FormattingUtils.formatCompact(
+                        totalIncome,
+                        symbol: currencySymbol,
+                      ),
+                      color: AppColors.success,
+                      icon: Icons.south_west_rounded,
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _FlowMetricCard(
+                      label: l10n.expense,
+                      value: FormattingUtils.formatCompact(
+                        totalExpense,
+                        symbol: currencySymbol,
+                      ),
+                      color: AppColors.error,
+                      icon: Icons.north_east_rounded,
+                      isDark: isDark,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.grey800.withValues(alpha: 0.45)
+                      : AppColors.grey100,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.net,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.grey500,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      FormattingUtils.formatCompact(net, symbol: currencySymbol),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: net >= 0 ? AppColors.success : AppColors.error,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FlowMetricCard extends StatelessWidget {
+  const _FlowMetricCard({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+    required this.isDark,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.grey800.withValues(alpha: 0.45)
+            : AppColors.grey100,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.grey500,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : AppColors.grey900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WhereMoneyWentSheet extends StatelessWidget {
+  const _WhereMoneyWentSheet({
+    required this.categoryBreakdown,
+    required this.totalExpense,
+    required this.currencySymbol,
+  });
+
+  final List<CategorySpend> categoryBreakdown;
+  final double totalExpense;
+  final String currencySymbol;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.whereYourMoneyGoes,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: CategoryDonutChart(
+                data: categoryBreakdown,
+                totalExpense: totalExpense,
+                size: 220,
+                currencySymbol: currencySymbol,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: categoryBreakdown.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final item = categoryBreakdown[index];
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.isDarkMode
+                          ? AppColors.darkCard
+                          : AppColors.lightCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: context.isDarkMode
+                            ? AppColors.darkBorder
+                            : AppColors.lightBorder,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Color(item.categoryColor),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            item.categoryName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${item.percentage.toStringAsFixed(1)}%',
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(color: AppColors.grey500),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
