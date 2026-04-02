@@ -22,6 +22,7 @@ import '../domain/transaction_entity.dart';
 import 'providers/date_filter_provider.dart';
 import 'providers/transaction_providers.dart';
 import 'widgets/date_range_selector.dart';
+import '../../../core/providers/privacy_provider.dart';
 
 /// Transactions Feature Presentation: List of financial transactions.
 /// Implements a professional fintech-grade list with states.
@@ -256,7 +257,7 @@ class TransactionsPage extends ConsumerWidget {
   }
 }
 
-class _CashFlowSummarySection extends StatefulWidget {
+class _CashFlowSummarySection extends ConsumerWidget {
   const _CashFlowSummarySection({
     required this.transactions,
     required this.categoryMap,
@@ -269,28 +270,21 @@ class _CashFlowSummarySection extends StatefulWidget {
   final String currencySymbol;
   final String activeFilterLabel;
 
-  @override
-  State<_CashFlowSummarySection> createState() =>
-      _CashFlowSummarySectionState();
-}
-
-class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
-  bool _isObscured = true;
-
-  String _obscureText(String text) {
-    return _isObscured ? '••••••' : text;
+  String _obscureText(String text, bool isObscured) {
+    return isObscured ? '••••' : text;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
+    final isObscured = ref.watch(privacyModeProvider);
 
     var totalIncome = 0.0;
     var totalExpense = 0.0;
     final expenseByCategory = <String, double>{};
 
-    for (final tx in widget.transactions) {
+    for (final tx in transactions) {
       if (tx.isIncome) {
         totalIncome += tx.amount;
       } else {
@@ -306,7 +300,7 @@ class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
 
     final net = totalIncome - totalExpense;
     final categoryBreakdown = expenseByCategory.entries.map((entry) {
-      final category = widget.categoryMap[entry.key];
+      final category = categoryMap[entry.key];
       final percentage = totalExpense == 0
           ? 0.0
           : (entry.value / totalExpense) * 100;
@@ -322,60 +316,70 @@ class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
     }).toList()..sort((a, b) => b.amount.compareTo(a.amount));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.24 : 0.05),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           l10n.incomeVsExpense,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                              ),
                         ),
-                        const SizedBox(height: 2),
                         Text(
-                          widget.activeFilterLabel,
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(color: AppColors.grey500),
+                          activeFilterLabel,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: AppColors.grey500,
+                                fontSize: 10,
+                              ),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
                     onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
+                      ref.read(privacyModeProvider.notifier).toggle();
                     },
                     icon: Icon(
-                      _isObscured
+                      isObscured
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
+                      size: 18,
+                      color: AppColors.grey500,
                     ),
-                    tooltip: _isObscured ? 'Show' : 'Hide',
+                    tooltip: isObscured ? 'Show' : 'Hide',
                   ),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
                     onPressed: totalExpense > 0
                         ? () {
                             showModalBottomSheet<void>(
@@ -391,17 +395,21 @@ class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
                               builder: (context) => _WhereMoneyWentSheet(
                                 categoryBreakdown: categoryBreakdown,
                                 totalExpense: totalExpense,
-                                currencySymbol: widget.currencySymbol,
+                                currencySymbol: currencySymbol,
                               ),
                             );
                           }
                         : null,
-                    icon: const Icon(Icons.pie_chart_outline_rounded),
+                    icon: const Icon(
+                      Icons.pie_chart_outline_rounded,
+                      size: 18,
+                      color: AppColors.grey500,
+                    ),
                     tooltip: l10n.whereYourMoneyGoes,
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
@@ -410,23 +418,25 @@ class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
                       value: _obscureText(
                         FormattingUtils.formatCompact(
                           totalIncome,
-                          symbol: widget.currencySymbol,
+                          symbol: currencySymbol,
                         ),
+                        isObscured,
                       ),
                       color: AppColors.success,
                       icon: Icons.south_west_rounded,
                       isDark: isDark,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _FlowMetricCard(
                       label: l10n.expense,
                       value: _obscureText(
                         FormattingUtils.formatCompact(
                           totalExpense,
-                          symbol: widget.currencySymbol,
+                          symbol: currencySymbol,
                         ),
+                        isObscured,
                       ),
                       color: AppColors.error,
                       icon: Icons.north_east_rounded,
@@ -435,25 +445,23 @@ class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.grey800.withValues(alpha: 0.45)
-                      : AppColors.grey100,
-                  borderRadius: BorderRadius.circular(14),
+                  color: isDark ? AppColors.darkSurface : AppColors.grey100,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
+                  horizontal: 10,
+                  vertical: 6,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       l10n.net,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: AppColors.grey500,
                         fontWeight: FontWeight.w600,
                       ),
@@ -462,10 +470,11 @@ class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
                       _obscureText(
                         FormattingUtils.formatCompact(
                           net,
-                          symbol: widget.currencySymbol,
+                          symbol: currencySymbol,
                         ),
+                        isObscured,
                       ),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: net >= 0 ? AppColors.success : AppColors.error,
                         fontWeight: FontWeight.w800,
                       ),
@@ -500,9 +509,7 @@ class _FlowMetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.grey800.withValues(alpha: 0.45)
-            : AppColors.grey100,
+        color: isDark ? AppColors.darkSurface : AppColors.grey100,
         borderRadius: BorderRadius.circular(14),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -648,7 +655,7 @@ class _WhereMoneyWentSheet extends StatelessWidget {
   }
 }
 
-class _TransactionTile extends StatelessWidget {
+class _TransactionTile extends ConsumerWidget {
   const _TransactionTile({
     required this.transaction,
     required this.category,
@@ -660,13 +667,18 @@ class _TransactionTile extends StatelessWidget {
   final String currencySymbol;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isObscured = ref.watch(privacyModeProvider);
     final l10n = AppLocalizations.of(context)!;
     final amountColor = transaction.isIncome
         ? AppColors.success
         : AppColors.error;
     final semanticsLabel =
         '${transaction.isIncome ? 'Income' : 'Expense'}: ${transaction.formattedAbsoluteAmount}';
+
+    final amountText = isObscured
+        ? '••••'
+        : '${transaction.displaySign}$currencySymbol${transaction.compactAbsoluteAmount}';
 
     final iconData = CategoryAssets.getIcon(category?.icon);
     final color = category != null ? Color(category!.color) : AppColors.grey500;
@@ -744,7 +756,7 @@ class _TransactionTile extends StatelessWidget {
             Semantics(
               label: semanticsLabel,
               child: Text(
-                '${transaction.displaySign}$currencySymbol${transaction.compactAbsoluteAmount}',
+                amountText,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: amountColor,
                   fontWeight: FontWeight.w700,
@@ -1266,7 +1278,7 @@ class _ThemeToggle extends ConsumerWidget {
 }
 
 class _SummaryHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _SummaryHeaderDelegate({required this.child, this.maxHeight = 220.0});
+  _SummaryHeaderDelegate({required this.child, this.maxHeight = 170.0});
 
   final Widget child;
   final double maxHeight;

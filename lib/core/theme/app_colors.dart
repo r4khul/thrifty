@@ -6,15 +6,15 @@ import 'package:flutter/material.dart';
 /// Follows Material 3 color system patterns.
 abstract class AppColors {
   // Core Colors
-  static const Color primary = Color(0xFF2E5BFF); // Neon Dark Blue
-  static const Color accent = Color(0xFF00D1FF); // Secondary accent for depth
+  static const Color primary = Color(0xFF4361EE); // Premium Indigo Blue
+  static const Color accent = Color(0xFF4895EF); // Secondary accent for depth
 
   // Dark Theme (AMOLED)
   static const Color darkBackground = Color(0xFF000000); // Pure Black
-  static const Color darkSurface = Color(0xFF121212); // Near Black Surface
-  static const Color darkCard = Color(0xFF1E1E1E); // Dark Card Component
-  static const Color darkBorder = Color(0xFF1F1F1F); // Subtle Dark Border
-  static const Color darkDivider = Color(0xFF1F1F1F);
+  static const Color darkSurface = Color(0xFF080808); // Even Deeper Near Black
+  static const Color darkCard = Color(0xFF0D0D0D); // Deep Dark Card
+  static const Color darkBorder = Color(0xFF141414); // Subtle Very Dark Border
+  static const Color darkDivider = Color(0xFF141414);
 
   // Light Theme
   static const Color lightBackground = Color(0xFFFFFFFF); // Pure White
