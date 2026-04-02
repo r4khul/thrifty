@@ -3,6 +3,633 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AccountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bankNameMeta = const VerificationMeta(
+    'bankName',
+  );
+  @override
+  late final GeneratedColumn<String> bankName = GeneratedColumn<String>(
+    'bank_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('savings'),
+  );
+  static const VerificationMeta _balanceMeta = const VerificationMeta(
+    'balance',
+  );
+  @override
+  late final GeneratedColumn<double> balance = GeneratedColumn<double>(
+    'balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _colorValueMeta = const VerificationMeta(
+    'colorValue',
+  );
+  @override
+  late final GeneratedColumn<int> colorValue = GeneratedColumn<int>(
+    'color_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0xFF2E5BFF),
+  );
+  static const VerificationMeta _iconCodePointMeta = const VerificationMeta(
+    'iconCodePoint',
+  );
+  @override
+  late final GeneratedColumn<int> iconCodePoint = GeneratedColumn<int>(
+    'icon_code_point',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0xe1b1),
+  );
+  static const VerificationMeta _editedLocallyMeta = const VerificationMeta(
+    'editedLocally',
+  );
+  @override
+  late final GeneratedColumn<bool> editedLocally = GeneratedColumn<bool>(
+    'edited_locally',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("edited_locally" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    bankName,
+    type,
+    balance,
+    colorValue,
+    iconCodePoint,
+    editedLocally,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'accounts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Account> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('bank_name')) {
+      context.handle(
+        _bankNameMeta,
+        bankName.isAcceptableOrUnknown(data['bank_name']!, _bankNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bankNameMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    }
+    if (data.containsKey('balance')) {
+      context.handle(
+        _balanceMeta,
+        balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+      );
+    }
+    if (data.containsKey('color_value')) {
+      context.handle(
+        _colorValueMeta,
+        colorValue.isAcceptableOrUnknown(data['color_value']!, _colorValueMeta),
+      );
+    }
+    if (data.containsKey('icon_code_point')) {
+      context.handle(
+        _iconCodePointMeta,
+        iconCodePoint.isAcceptableOrUnknown(
+          data['icon_code_point']!,
+          _iconCodePointMeta,
+        ),
+      );
+    }
+    if (data.containsKey('edited_locally')) {
+      context.handle(
+        _editedLocallyMeta,
+        editedLocally.isAcceptableOrUnknown(
+          data['edited_locally']!,
+          _editedLocallyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Account map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Account(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      bankName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_name'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      balance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}balance'],
+      )!,
+      colorValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color_value'],
+      )!,
+      iconCodePoint: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}icon_code_point'],
+      )!,
+      editedLocally: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}edited_locally'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AccountsTable createAlias(String alias) {
+    return $AccountsTable(attachedDatabase, alias);
+  }
+}
+
+class Account extends DataClass implements Insertable<Account> {
+  /// Unique stable identifier. Primary Key.
+  final String id;
+
+  /// Display name of the account (e.g., "My Savings").
+  final String name;
+
+  /// Name of the bank or institution (e.g., "Chase", "SBI").
+  final String bankName;
+
+  /// Account type string: "savings", "checking", "cash", "investment", "credit".
+  final String type;
+
+  /// Current balance of the account.
+  final double balance;
+
+  /// Color ARGB int for UI theming of the card.
+  final int colorValue;
+
+  /// Icon codepoint for the account (Material icon code).
+  final int iconCodePoint;
+
+  /// Synchronization state.
+  final bool editedLocally;
+
+  /// Metadata: Timestamp of when the record was first inserted.
+  final int createdAt;
+
+  /// Metadata: Timestamp of when the record was last modified locally.
+  final int updatedAt;
+  const Account({
+    required this.id,
+    required this.name,
+    required this.bankName,
+    required this.type,
+    required this.balance,
+    required this.colorValue,
+    required this.iconCodePoint,
+    required this.editedLocally,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['bank_name'] = Variable<String>(bankName);
+    map['type'] = Variable<String>(type);
+    map['balance'] = Variable<double>(balance);
+    map['color_value'] = Variable<int>(colorValue);
+    map['icon_code_point'] = Variable<int>(iconCodePoint);
+    map['edited_locally'] = Variable<bool>(editedLocally);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  AccountsCompanion toCompanion(bool nullToAbsent) {
+    return AccountsCompanion(
+      id: Value(id),
+      name: Value(name),
+      bankName: Value(bankName),
+      type: Value(type),
+      balance: Value(balance),
+      colorValue: Value(colorValue),
+      iconCodePoint: Value(iconCodePoint),
+      editedLocally: Value(editedLocally),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Account.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Account(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      bankName: serializer.fromJson<String>(json['bankName']),
+      type: serializer.fromJson<String>(json['type']),
+      balance: serializer.fromJson<double>(json['balance']),
+      colorValue: serializer.fromJson<int>(json['colorValue']),
+      iconCodePoint: serializer.fromJson<int>(json['iconCodePoint']),
+      editedLocally: serializer.fromJson<bool>(json['editedLocally']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'bankName': serializer.toJson<String>(bankName),
+      'type': serializer.toJson<String>(type),
+      'balance': serializer.toJson<double>(balance),
+      'colorValue': serializer.toJson<int>(colorValue),
+      'iconCodePoint': serializer.toJson<int>(iconCodePoint),
+      'editedLocally': serializer.toJson<bool>(editedLocally),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  Account copyWith({
+    String? id,
+    String? name,
+    String? bankName,
+    String? type,
+    double? balance,
+    int? colorValue,
+    int? iconCodePoint,
+    bool? editedLocally,
+    int? createdAt,
+    int? updatedAt,
+  }) => Account(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    bankName: bankName ?? this.bankName,
+    type: type ?? this.type,
+    balance: balance ?? this.balance,
+    colorValue: colorValue ?? this.colorValue,
+    iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+    editedLocally: editedLocally ?? this.editedLocally,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Account copyWithCompanion(AccountsCompanion data) {
+    return Account(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      bankName: data.bankName.present ? data.bankName.value : this.bankName,
+      type: data.type.present ? data.type.value : this.type,
+      balance: data.balance.present ? data.balance.value : this.balance,
+      colorValue: data.colorValue.present
+          ? data.colorValue.value
+          : this.colorValue,
+      iconCodePoint: data.iconCodePoint.present
+          ? data.iconCodePoint.value
+          : this.iconCodePoint,
+      editedLocally: data.editedLocally.present
+          ? data.editedLocally.value
+          : this.editedLocally,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Account(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('bankName: $bankName, ')
+          ..write('type: $type, ')
+          ..write('balance: $balance, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('iconCodePoint: $iconCodePoint, ')
+          ..write('editedLocally: $editedLocally, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    bankName,
+    type,
+    balance,
+    colorValue,
+    iconCodePoint,
+    editedLocally,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Account &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.bankName == this.bankName &&
+          other.type == this.type &&
+          other.balance == this.balance &&
+          other.colorValue == this.colorValue &&
+          other.iconCodePoint == this.iconCodePoint &&
+          other.editedLocally == this.editedLocally &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AccountsCompanion extends UpdateCompanion<Account> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> bankName;
+  final Value<String> type;
+  final Value<double> balance;
+  final Value<int> colorValue;
+  final Value<int> iconCodePoint;
+  final Value<bool> editedLocally;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const AccountsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.bankName = const Value.absent(),
+    this.type = const Value.absent(),
+    this.balance = const Value.absent(),
+    this.colorValue = const Value.absent(),
+    this.iconCodePoint = const Value.absent(),
+    this.editedLocally = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AccountsCompanion.insert({
+    required String id,
+    required String name,
+    required String bankName,
+    this.type = const Value.absent(),
+    this.balance = const Value.absent(),
+    this.colorValue = const Value.absent(),
+    this.iconCodePoint = const Value.absent(),
+    this.editedLocally = const Value.absent(),
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       bankName = Value(bankName),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<Account> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? bankName,
+    Expression<String>? type,
+    Expression<double>? balance,
+    Expression<int>? colorValue,
+    Expression<int>? iconCodePoint,
+    Expression<bool>? editedLocally,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (bankName != null) 'bank_name': bankName,
+      if (type != null) 'type': type,
+      if (balance != null) 'balance': balance,
+      if (colorValue != null) 'color_value': colorValue,
+      if (iconCodePoint != null) 'icon_code_point': iconCodePoint,
+      if (editedLocally != null) 'edited_locally': editedLocally,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AccountsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? bankName,
+    Value<String>? type,
+    Value<double>? balance,
+    Value<int>? colorValue,
+    Value<int>? iconCodePoint,
+    Value<bool>? editedLocally,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AccountsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      bankName: bankName ?? this.bankName,
+      type: type ?? this.type,
+      balance: balance ?? this.balance,
+      colorValue: colorValue ?? this.colorValue,
+      iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+      editedLocally: editedLocally ?? this.editedLocally,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (bankName.present) {
+      map['bank_name'] = Variable<String>(bankName.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (balance.present) {
+      map['balance'] = Variable<double>(balance.value);
+    }
+    if (colorValue.present) {
+      map['color_value'] = Variable<int>(colorValue.value);
+    }
+    if (iconCodePoint.present) {
+      map['icon_code_point'] = Variable<int>(iconCodePoint.value);
+    }
+    if (editedLocally.present) {
+      map['edited_locally'] = Variable<bool>(editedLocally.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AccountsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('bankName: $bankName, ')
+          ..write('type: $type, ')
+          ..write('balance: $balance, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('iconCodePoint: $iconCodePoint, ')
+          ..write('editedLocally: $editedLocally, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TransactionsTable extends Transactions
     with TableInfo<$TransactionsTable, Transaction> {
   @override
@@ -1499,6 +2126,7 @@ class AttachmentsCompanion extends UpdateCompanion<Attachment> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $AccountsTable accounts = $AccountsTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
@@ -1506,6 +2134,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'tx_filter_idx',
     'CREATE INDEX tx_filter_idx ON transactions (timestamp, category_id)',
   );
+  late final AccountDao accountDao = AccountDao(this as AppDatabase);
   late final TransactionDao transactionDao = TransactionDao(
     this as AppDatabase,
   );
@@ -1516,6 +2145,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    accounts,
     transactions,
     categories,
     attachments,
@@ -1523,6 +2153,301 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
+typedef $$AccountsTableCreateCompanionBuilder =
+    AccountsCompanion Function({
+      required String id,
+      required String name,
+      required String bankName,
+      Value<String> type,
+      Value<double> balance,
+      Value<int> colorValue,
+      Value<int> iconCodePoint,
+      Value<bool> editedLocally,
+      required int createdAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AccountsTableUpdateCompanionBuilder =
+    AccountsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> bankName,
+      Value<String> type,
+      Value<double> balance,
+      Value<int> colorValue,
+      Value<int> iconCodePoint,
+      Value<bool> editedLocally,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$AccountsTableFilterComposer
+    extends Composer<_$AppDatabase, $AccountsTable> {
+  $$AccountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get iconCodePoint => $composableBuilder(
+    column: $table.iconCodePoint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get editedLocally => $composableBuilder(
+    column: $table.editedLocally,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AccountsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AccountsTable> {
+  $$AccountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get iconCodePoint => $composableBuilder(
+    column: $table.iconCodePoint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get editedLocally => $composableBuilder(
+    column: $table.editedLocally,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AccountsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AccountsTable> {
+  $$AccountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get bankName =>
+      $composableBuilder(column: $table.bankName, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<double> get balance =>
+      $composableBuilder(column: $table.balance, builder: (column) => column);
+
+  GeneratedColumn<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get iconCodePoint => $composableBuilder(
+    column: $table.iconCodePoint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get editedLocally => $composableBuilder(
+    column: $table.editedLocally,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AccountsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AccountsTable,
+          Account,
+          $$AccountsTableFilterComposer,
+          $$AccountsTableOrderingComposer,
+          $$AccountsTableAnnotationComposer,
+          $$AccountsTableCreateCompanionBuilder,
+          $$AccountsTableUpdateCompanionBuilder,
+          (Account, BaseReferences<_$AppDatabase, $AccountsTable, Account>),
+          Account,
+          PrefetchHooks Function()
+        > {
+  $$AccountsTableTableManager(_$AppDatabase db, $AccountsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AccountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AccountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AccountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> bankName = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<double> balance = const Value.absent(),
+                Value<int> colorValue = const Value.absent(),
+                Value<int> iconCodePoint = const Value.absent(),
+                Value<bool> editedLocally = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AccountsCompanion(
+                id: id,
+                name: name,
+                bankName: bankName,
+                type: type,
+                balance: balance,
+                colorValue: colorValue,
+                iconCodePoint: iconCodePoint,
+                editedLocally: editedLocally,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String bankName,
+                Value<String> type = const Value.absent(),
+                Value<double> balance = const Value.absent(),
+                Value<int> colorValue = const Value.absent(),
+                Value<int> iconCodePoint = const Value.absent(),
+                Value<bool> editedLocally = const Value.absent(),
+                required int createdAt,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AccountsCompanion.insert(
+                id: id,
+                name: name,
+                bankName: bankName,
+                type: type,
+                balance: balance,
+                colorValue: colorValue,
+                iconCodePoint: iconCodePoint,
+                editedLocally: editedLocally,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AccountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AccountsTable,
+      Account,
+      $$AccountsTableFilterComposer,
+      $$AccountsTableOrderingComposer,
+      $$AccountsTableAnnotationComposer,
+      $$AccountsTableCreateCompanionBuilder,
+      $$AccountsTableUpdateCompanionBuilder,
+      (Account, BaseReferences<_$AppDatabase, $AccountsTable, Account>),
+      Account,
+      PrefetchHooks Function()
+    >;
 typedef $$TransactionsTableCreateCompanionBuilder =
     TransactionsCompanion Function({
       required String id,
@@ -2485,6 +3410,8 @@ typedef $$AttachmentsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$AccountsTableTableManager get accounts =>
+      $$AccountsTableTableManager(_db, _db.accounts);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$CategoriesTableTableManager get categories =>

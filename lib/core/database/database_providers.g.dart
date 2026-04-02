@@ -252,3 +252,49 @@ final class AttachmentDaoProvider
 }
 
 String _$attachmentDaoHash() => r'76d05cda6a8bfedb54a45be46968fe3383f99e5c';
+
+/// Provider for [AccountDao].
+
+@ProviderFor(accountDao)
+final accountDaoProvider = AccountDaoProvider._();
+
+/// Provider for [AccountDao].
+
+final class AccountDaoProvider
+    extends $FunctionalProvider<AccountDao, AccountDao, AccountDao>
+    with $Provider<AccountDao> {
+  /// Provider for [AccountDao].
+  AccountDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'accountDaoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$accountDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<AccountDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AccountDao create(Ref ref) {
+    return accountDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AccountDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AccountDao>(value),
+    );
+  }
+}
+
+String _$accountDaoHash() => r'96e41bb5f96f9637bb3ffebd344a47b3a3526194';

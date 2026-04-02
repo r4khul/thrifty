@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../features/accounts/presentation/accounts_page.dart';
 import '../features/analytics/presentation/financial_overview_page.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
@@ -90,6 +91,10 @@ GoRouter router(Ref ref) {
         path: '/tx/:id',
         builder: (context, state) =>
             TransactionDetailsPage(id: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/accounts',
+        builder: (context, state) => const AccountsPage(),
       ),
       GoRoute(
         path: '/categories',

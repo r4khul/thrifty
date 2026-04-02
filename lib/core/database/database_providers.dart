@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import 'daos/account_dao.dart';
 import 'daos/attachment_dao.dart';
 import 'daos/category_dao.dart';
 import 'daos/transaction_dao.dart';
@@ -81,4 +82,11 @@ CategoryDao categoryDao(Ref ref) {
 AttachmentDao attachmentDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return AttachmentDao(db);
+}
+
+/// Provider for [AccountDao].
+@riverpod
+AccountDao accountDao(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return AccountDao(db);
 }

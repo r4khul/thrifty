@@ -292,8 +292,7 @@ class _CashFlowSummarySection extends StatelessWidget {
         amount: entry.value,
         percentage: percentage,
       );
-    }).toList()
-      ..sort((a, b) => b.amount.compareTo(a.amount));
+    }).toList()..sort((a, b) => b.amount.compareTo(a.amount));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -416,7 +415,10 @@ class _CashFlowSummarySection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      FormattingUtils.formatCompact(net, symbol: currencySymbol),
+                      FormattingUtils.formatCompact(
+                        net,
+                        symbol: currencySymbol,
+                      ),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: net >= 0 ? AppColors.success : AppColors.error,
                         fontWeight: FontWeight.w800,
@@ -1091,6 +1093,14 @@ class _AppDrawer extends ConsumerWidget {
               _ThemeToggle(),
 
               // Menu Items
+              _DrawerItem(
+                icon: Icons.account_balance_wallet_rounded,
+                label: 'Accounts',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/accounts');
+                },
+              ),
               _DrawerItem(
                 icon: Icons.category_outlined,
                 label: l10n.categories,

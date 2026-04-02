@@ -1,5 +1,44 @@
 import 'package:drift/drift.dart';
 
+/// Accounts table schema.
+/// Represents wallet/bank accounts owned by the user.
+class Accounts extends Table {
+  /// Unique stable identifier. Primary Key.
+  TextColumn get id => text()();
+
+  /// Display name of the account (e.g., "My Savings").
+  TextColumn get name => text()();
+
+  /// Name of the bank or institution (e.g., "Chase", "SBI").
+  TextColumn get bankName => text()();
+
+  /// Account type string: "savings", "checking", "cash", "investment", "credit".
+  TextColumn get type => text().withDefault(const Constant('savings'))();
+
+  /// Current balance of the account.
+  RealColumn get balance => real().withDefault(const Constant(0.0))();
+
+  IntColumn get colorValue =>
+      integer().withDefault(const Constant(0xFF6366F1))();
+
+  /// Icon codepoint for the account (Material icon code).
+  IntColumn get iconCodePoint =>
+      integer().withDefault(const Constant(0xe1b1))(); // account_balance_wallet
+
+  /// Synchronization state.
+  BoolColumn get editedLocally =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Metadata: Timestamp of when the record was first inserted.
+  IntColumn get createdAt => integer()();
+
+  /// Metadata: Timestamp of when the record was last modified locally.
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Categories table schema.
 /// Unique classifications for transactions, acting as a lookup for the Transactions table.
 class Categories extends Table {
