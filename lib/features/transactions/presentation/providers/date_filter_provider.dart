@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'date_filter_provider.freezed.dart';
@@ -75,6 +76,16 @@ class DateFilterController extends _$DateFilterController {
       start: DateTime(start.year, start.month, start.day),
       end: DateTime(end.year, end.month, end.day, 23, 59, 59),
       label: 'Custom',
+      isCustom: true,
+    );
+  }
+
+  void setSingleDate(DateTime date) {
+    final df = DateFormat('d MMM');
+    state = DateRangeFilter(
+      start: DateTime(date.year, date.month, date.day),
+      end: DateTime(date.year, date.month, date.day, 23, 59, 59),
+      label: df.format(date),
       isCustom: true,
     );
   }

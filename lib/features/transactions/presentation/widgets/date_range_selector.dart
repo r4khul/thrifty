@@ -24,6 +24,15 @@ class DateRangeSelector extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           cacheExtent: 200,
           children: [
+            _IconChip(
+              icon: Icons.calendar_today_rounded,
+              isSelected:
+                  currentFilter.isCustom && currentFilter.label != 'Custom',
+              isDark: isDark,
+              onTap: () => _showDatePicker(context, ref),
+            ),
+            _InfoChip(text: _getFilterDetails(currentFilter), isDark: isDark),
+            const SizedBox(width: 4),
             _FilterChip(
               label: l10n.today,
               isSelected: currentFilter.label == 'Today',
@@ -71,6 +80,33 @@ class DateRangeSelector extends ConsumerWidget {
     );
   }
 
+  String _getFilterDetails(DateRangeFilter filter) {
+    if (filter.label == 'All Time') return 'Lifetime';
+
+    final dfDateYear = DateFormat('d MMM yyyy');
+    final dfDayMonth = DateFormat('d MMM');
+    final dfMonthYear = DateFormat('MMM yyyy');
+    final dfYear = DateFormat('yyyy');
+
+    // For single day (Today or selected single date)
+    if (filter.start.year == filter.end.year &&
+        filter.start.month == filter.end.month &&
+        filter.start.day == filter.end.day) {
+      return dfDateYear.format(filter.start);
+    }
+
+    if (filter.label == 'This Month') {
+      return dfMonthYear.format(filter.start);
+    }
+
+    if (filter.label == 'This Year') {
+      return dfYear.format(filter.start);
+    }
+
+    // Range display
+    return '${dfDayMonth.format(filter.start)} - ${dfDayMonth.format(filter.end)}';
+  }
+
   Future<void> _showRangePicker(BuildContext context, WidgetRef ref) async {
     final isDark = context.isDarkMode;
     final surfaceColor = isDark ? AppColors.darkSurface : Colors.white;
@@ -100,6 +136,138 @@ class DateRangeSelector extends ConsumerWidget {
           .read(dateFilterControllerProvider.notifier)
           .setCustomRange(picked.start, picked.end);
     }
+  }
+
+  Future<void> _showDatePicker(BuildContext context, WidgetRef ref) async {
+    final isDark = context.isDarkMode;
+    final surfaceColor = isDark ? AppColors.darkSurface : Colors.white;
+    final onSurfaceColor = isDark ? Colors.white : Colors.black;
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: surfaceColor,
+              onSurface: onSurfaceColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      ref.read(dateFilterControllerProvider.notifier).setSingleDate(picked);
+    }
+  }
+}
+
+/// A non-interactive info chip that provides context about the current selection.
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({required this.text, required this.isDark});
+
+  final String text;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.grey900.withValues(alpha: 0.5)
+            : AppColors.grey100.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? AppColors.grey800.withValues(alpha: 0.3)
+              : AppColors.grey200,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            size: 14,
+            color: isDark ? AppColors.grey500 : AppColors.grey600,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: isDark ? AppColors.grey400 : AppColors.grey700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Icon chip for calendar selection.
+class _IconChip extends StatelessWidget {
+  const _IconChip({
+    required this.icon,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    // Calendar chip stays in the accent primary color (Indigo) or stands out
+    final backgroundColor = isSelected
+        ? AppColors.primary
+        : (isDark
+              ? AppColors.primary.withValues(alpha: 0.2)
+              : AppColors.primary.withValues(alpha: 0.15));
+    final borderColor = isSelected
+        ? AppColors.primary
+        : (isDark
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : AppColors.primary.withValues(alpha: 0.3));
+    final iconColor = isSelected ? Colors.white : AppColors.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: borderColor),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Center(child: Icon(icon, size: 18, color: iconColor)),
+        ),
+      ),
+    );
   }
 }
 
