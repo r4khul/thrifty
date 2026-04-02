@@ -100,81 +100,96 @@ class TransactionsPage extends ConsumerWidget {
                     );
                   }
                   return categoryMapAsync.when(
-                    data: (categoryMap) => Column(
-                      children: [
-                        _CashFlowSummarySection(
-                          transactions: transactions,
-                          categoryMap: categoryMap,
-                          currencySymbol: currencySymbol,
-                          activeFilterLabel: dateRangeFilter.label,
-                        ),
-                        Expanded(
-                          child: RefreshIndicator(
-                            key: const ValueKey('list'),
-                            onRefresh: () async {
-                              try {
-                                await ref
-                                    .read(transactionRepositoryProvider)
-                                    .syncWithRemote();
-                              } on Object catch (_) {
-                                // Fail silently or show toast
-                              }
-                            },
-                            child: RepaintBoundary(
-                              child: ListView.builder(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                    data: (categoryMap) => RefreshIndicator(
+                      key: const ValueKey('list'),
+                      onRefresh: () async {
+                        try {
+                          await ref
+                              .read(transactionRepositoryProvider)
+                              .syncWithRemote();
+                        } on Object catch (_) {
+                          // Fail silently or show toast
+                        }
+                      },
+                      child: NestedScrollView(
+                        headerSliverBuilder: (context, innerBoxIsScrolled) {
+                          return [
+                            SliverPersistentHeader(
+                              floating: true,
+                              delegate: _SummaryHeaderDelegate(
+                                child: _CashFlowSummarySection(
+                                  transactions: transactions,
+                                  categoryMap: categoryMap,
+                                  currencySymbol: currencySymbol,
+                                  activeFilterLabel: dateRangeFilter.label,
                                 ),
-                                itemCount: transactions.length,
-                                itemExtent: 72,
-                                itemBuilder: (context, index) {
-                                  final tx = transactions[index];
-                                  final category = categoryMap[tx.categoryId];
-                                  return Dismissible(
-                                    key: Key(tx.id),
-                                    direction: DismissDirection.endToStart,
-                                    background: Container(
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                      ),
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.error,
-                                      ),
-                                      child: const Icon(
-                                        Icons.delete_outline_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    confirmDismiss: (direction) =>
-                                        _showDeleteConfirmation(
-                                          context,
-                                          ref,
-                                          tx,
-                                        ),
-                                    onDismissed: (direction) {
-                                      ref
-                                          .read(
-                                            transactionControllerProvider
-                                                .notifier,
-                                          )
-                                          .deleteTransaction(tx.id);
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).hideCurrentSnackBar();
-                                    },
-                                    child: _TransactionTile(
-                                      transaction: tx,
-                                      category: category,
-                                      currencySymbol: currencySymbol,
-                                    ),
-                                  );
-                                },
                               ),
+                            ),
+                          ];
+                        },
+                        body: RepaintBoundary(
+                          child: ShaderMask(
+                            shaderCallback: (Rect bounds) {
+                              return const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.white,
+                                  Colors.white,
+                                  Colors.transparent,
+                                ],
+                                stops: [0.0, 0.05, 0.95, 1.0],
+                              ).createShader(bounds);
+                            },
+                            blendMode: BlendMode.dstIn,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              itemCount: transactions.length,
+                              itemExtent: 72,
+                              itemBuilder: (context, index) {
+                                final tx = transactions[index];
+                                final category = categoryMap[tx.categoryId];
+                                return Dismissible(
+                                  key: Key(tx.id),
+                                  direction: DismissDirection.endToStart,
+                                  background: Container(
+                                    alignment: Alignment.centerRight,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.error,
+                                    ),
+                                    child: const Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  confirmDismiss: (direction) =>
+                                      _showDeleteConfirmation(context, ref, tx),
+                                  onDismissed: (direction) {
+                                    ref
+                                        .read(
+                                          transactionControllerProvider
+                                              .notifier,
+                                        )
+                                        .deleteTransaction(tx.id);
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).hideCurrentSnackBar();
+                                  },
+                                  child: _TransactionTile(
+                                    transaction: tx,
+                                    category: category,
+                                    currencySymbol: currencySymbol,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
                     loading: () =>
                         const _LoadingState(key: ValueKey('loading_cats')),
@@ -241,7 +256,7 @@ class TransactionsPage extends ConsumerWidget {
   }
 }
 
-class _CashFlowSummarySection extends StatelessWidget {
+class _CashFlowSummarySection extends StatefulWidget {
   const _CashFlowSummarySection({
     required this.transactions,
     required this.categoryMap,
@@ -255,6 +270,18 @@ class _CashFlowSummarySection extends StatelessWidget {
   final String activeFilterLabel;
 
   @override
+  State<_CashFlowSummarySection> createState() =>
+      _CashFlowSummarySectionState();
+}
+
+class _CashFlowSummarySectionState extends State<_CashFlowSummarySection> {
+  bool _isObscured = true;
+
+  String _obscureText(String text) {
+    return _isObscured ? '••••••' : text;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
@@ -263,7 +290,7 @@ class _CashFlowSummarySection extends StatelessWidget {
     var totalExpense = 0.0;
     final expenseByCategory = <String, double>{};
 
-    for (final tx in transactions) {
+    for (final tx in widget.transactions) {
       if (tx.isIncome) {
         totalIncome += tx.amount;
       } else {
@@ -279,7 +306,7 @@ class _CashFlowSummarySection extends StatelessWidget {
 
     final net = totalIncome - totalExpense;
     final categoryBreakdown = expenseByCategory.entries.map((entry) {
-      final category = categoryMap[entry.key];
+      final category = widget.categoryMap[entry.key];
       final percentage = totalExpense == 0
           ? 0.0
           : (entry.value / totalExpense) * 100;
@@ -295,7 +322,7 @@ class _CashFlowSummarySection extends StatelessWidget {
     }).toList()..sort((a, b) => b.amount.compareTo(a.amount));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
@@ -312,7 +339,7 @@ class _CashFlowSummarySection extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             children: [
               Row(
@@ -326,14 +353,27 @@ class _CashFlowSummarySection extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
-                          activeFilterLabel,
+                          widget.activeFilterLabel,
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(color: AppColors.grey500),
                         ),
                       ],
                     ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isObscured = !_isObscured;
+                      });
+                    },
+                    icon: Icon(
+                      _isObscured
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                    tooltip: _isObscured ? 'Show' : 'Hide',
                   ),
                   IconButton(
                     onPressed: totalExpense > 0
@@ -351,7 +391,7 @@ class _CashFlowSummarySection extends StatelessWidget {
                               builder: (context) => _WhereMoneyWentSheet(
                                 categoryBreakdown: categoryBreakdown,
                                 totalExpense: totalExpense,
-                                currencySymbol: currencySymbol,
+                                currencySymbol: widget.currencySymbol,
                               ),
                             );
                           }
@@ -361,28 +401,32 @@ class _CashFlowSummarySection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
                     child: _FlowMetricCard(
                       label: l10n.income,
-                      value: FormattingUtils.formatCompact(
-                        totalIncome,
-                        symbol: currencySymbol,
+                      value: _obscureText(
+                        FormattingUtils.formatCompact(
+                          totalIncome,
+                          symbol: widget.currencySymbol,
+                        ),
                       ),
                       color: AppColors.success,
                       icon: Icons.south_west_rounded,
                       isDark: isDark,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _FlowMetricCard(
                       label: l10n.expense,
-                      value: FormattingUtils.formatCompact(
-                        totalExpense,
-                        symbol: currencySymbol,
+                      value: _obscureText(
+                        FormattingUtils.formatCompact(
+                          totalExpense,
+                          symbol: widget.currencySymbol,
+                        ),
                       ),
                       color: AppColors.error,
                       icon: Icons.north_east_rounded,
@@ -391,7 +435,7 @@ class _CashFlowSummarySection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -401,8 +445,8 @@ class _CashFlowSummarySection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
+                  horizontal: 12,
+                  vertical: 10,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -415,9 +459,11 @@ class _CashFlowSummarySection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      FormattingUtils.formatCompact(
-                        net,
-                        symbol: currencySymbol,
+                      _obscureText(
+                        FormattingUtils.formatCompact(
+                          net,
+                          symbol: widget.currencySymbol,
+                        ),
                       ),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: net >= 0 ? AppColors.success : AppColors.error,
@@ -459,19 +505,19 @@ class _FlowMetricCard extends StatelessWidget {
             : AppColors.grey100,
         borderRadius: BorderRadius.circular(14),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 16),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1216,5 +1262,41 @@ class _ThemeToggle extends ConsumerWidget {
         activeTrackColor: AppColors.primary,
       ),
     );
+  }
+}
+
+class _SummaryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _SummaryHeaderDelegate({required this.child, this.maxHeight = 220.0});
+
+  final Widget child;
+  final double maxHeight;
+
+  @override
+  double get minExtent => 0.0;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    double progress = shrinkOffset / maxExtent;
+    double opacity = (1.0 - progress * 1.5).clamp(0.0, 1.0);
+
+    return ClipRect(
+      child: OverflowBox(
+        maxHeight: maxExtent,
+        alignment: Alignment.topCenter,
+        child: Opacity(opacity: opacity, child: child),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _SummaryHeaderDelegate oldDelegate) {
+    return oldDelegate.child != child || oldDelegate.maxHeight != maxHeight;
   }
 }
