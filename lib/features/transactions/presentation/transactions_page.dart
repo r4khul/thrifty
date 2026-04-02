@@ -1278,16 +1278,15 @@ class _ThemeToggle extends ConsumerWidget {
 }
 
 class _SummaryHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _SummaryHeaderDelegate({required this.child, this.maxHeight = 170.0});
+  _SummaryHeaderDelegate({required this.child});
 
   final Widget child;
-  final double maxHeight;
 
   @override
   double get minExtent => 0.0;
 
   @override
-  double get maxExtent => maxHeight;
+  double get maxExtent => 170.0;
 
   @override
   Widget build(
@@ -1295,8 +1294,8 @@ class _SummaryHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    double progress = shrinkOffset / maxExtent;
-    double opacity = (1.0 - progress * 1.5).clamp(0.0, 1.0);
+    final progress = shrinkOffset / maxExtent;
+    final opacity = (1.0 - progress * 1.5).clamp(0.0, 1.0);
 
     return ClipRect(
       child: OverflowBox(
@@ -1309,6 +1308,6 @@ class _SummaryHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _SummaryHeaderDelegate oldDelegate) {
-    return oldDelegate.child != child || oldDelegate.maxHeight != maxHeight;
+    return oldDelegate.child != child;
   }
 }
