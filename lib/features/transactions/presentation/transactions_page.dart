@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thrifty/features/analytics/domain/financial_data_models.dart';
@@ -274,11 +275,40 @@ class _CashFlowSummarySection extends ConsumerWidget {
     return isObscured ? '••••' : text;
   }
 
+  String _getFilterDetails(DateRangeFilter filter) {
+    if (filter.label == 'All Time') return 'Lifetime';
+
+    final dfDateYear = DateFormat('d MMM yyyy');
+    final dfDayMonth = DateFormat('d MMM');
+    final dfMonthYear = DateFormat('MMM yyyy');
+    final dfYear = DateFormat('yyyy');
+
+    // For single day (Today or selected single date)
+    if (filter.start.year == filter.end.year &&
+        filter.start.month == filter.end.month &&
+        filter.start.day == filter.end.day) {
+      return dfDateYear.format(filter.start);
+    }
+
+    if (filter.label == 'This Month') {
+      return dfMonthYear.format(filter.start);
+    }
+
+    if (filter.label == 'This Year') {
+      return dfYear.format(filter.start);
+    }
+
+    // Range display
+    return '${dfDayMonth.format(filter.start)} - ${dfDayMonth.format(filter.end)}';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final isObscured = ref.watch(privacyModeProvider);
+    final currentFilter = ref.watch(dateFilterControllerProvider);
 
     var totalIncome = 0.0;
     var totalExpense = 0.0;
@@ -353,13 +383,32 @@ class _CashFlowSummarySection extends ConsumerWidget {
                                 letterSpacing: -0.2,
                               ),
                         ),
-                        Text(
-                          activeFilterLabel,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: AppColors.grey500,
-                                fontSize: 10,
-                              ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.grey900.withValues(alpha: 0.5)
+                                : AppColors.grey100.withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isDark
+                                  ? AppColors.grey800.withValues(alpha: 0.3)
+                                  : AppColors.grey200.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Text(
+                            _getFilterDetails(currentFilter),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: isDark
+                                  ? AppColors.grey500
+                                  : AppColors.grey600,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 9.5,
+                            ),
+                          ),
                         ),
                       ],
                     ),

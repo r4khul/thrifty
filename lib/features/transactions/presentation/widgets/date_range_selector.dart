@@ -31,7 +31,6 @@ class DateRangeSelector extends ConsumerWidget {
               isDark: isDark,
               onTap: () => _showDatePicker(context, ref),
             ),
-            _InfoChip(text: _getFilterDetails(currentFilter), isDark: isDark),
             const SizedBox(width: 4),
             _FilterChip(
               label: l10n.today,
@@ -78,33 +77,6 @@ class DateRangeSelector extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _getFilterDetails(DateRangeFilter filter) {
-    if (filter.label == 'All Time') return 'Lifetime';
-
-    final dfDateYear = DateFormat('d MMM yyyy');
-    final dfDayMonth = DateFormat('d MMM');
-    final dfMonthYear = DateFormat('MMM yyyy');
-    final dfYear = DateFormat('yyyy');
-
-    // For single day (Today or selected single date)
-    if (filter.start.year == filter.end.year &&
-        filter.start.month == filter.end.month &&
-        filter.start.day == filter.end.day) {
-      return dfDateYear.format(filter.start);
-    }
-
-    if (filter.label == 'This Month') {
-      return dfMonthYear.format(filter.start);
-    }
-
-    if (filter.label == 'This Year') {
-      return dfYear.format(filter.start);
-    }
-
-    // Range display
-    return '${dfDayMonth.format(filter.start)} - ${dfDayMonth.format(filter.end)}';
   }
 
   Future<void> _showRangePicker(BuildContext context, WidgetRef ref) async {
@@ -166,50 +138,6 @@ class DateRangeSelector extends ConsumerWidget {
     if (picked != null) {
       ref.read(dateFilterControllerProvider.notifier).setSingleDate(picked);
     }
-  }
-}
-
-/// A non-interactive info chip that provides context about the current selection.
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({required this.text, required this.isDark});
-
-  final String text;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.grey900.withValues(alpha: 0.5)
-            : AppColors.grey100.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark
-              ? AppColors.grey800.withValues(alpha: 0.3)
-              : AppColors.grey200,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 14,
-            color: isDark ? AppColors.grey500 : AppColors.grey600,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: isDark ? AppColors.grey400 : AppColors.grey700,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
