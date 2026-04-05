@@ -70,8 +70,23 @@ Stream<TransactionEntity?> transactionById(Ref ref, String id) {
 }
 
 @riverpod
+class AccountFilterController extends _$AccountFilterController {
+  @override
+  String? build() => null;
+
+  void selectAccount(String? accountId) {
+    state = accountId;
+  }
+}
+
+@riverpod
 Stream<List<TransactionEntity>> filteredTransactions(Ref ref) {
   final filter = ref.watch(dateFilterControllerProvider);
+  final accountId = ref.watch(accountFilterControllerProvider);
   final repository = ref.watch(transactionRepositoryProvider);
-  return repository.watchInRange(filter.start, filter.end);
+  
+  return repository.watchInRange(filter.start, filter.end).map((txs) {
+    if (accountId == null) return txs;
+    return txs.where((t) => t.accountId == accountId).toList();
+  });
 }

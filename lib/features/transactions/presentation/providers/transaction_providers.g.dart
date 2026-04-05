@@ -166,6 +166,59 @@ final class TransactionByIdFamily extends $Family
   String toString() => r'transactionByIdProvider';
 }
 
+@ProviderFor(AccountFilterController)
+final accountFilterControllerProvider = AccountFilterControllerProvider._();
+
+final class AccountFilterControllerProvider
+    extends $NotifierProvider<AccountFilterController, String?> {
+  AccountFilterControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'accountFilterControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$accountFilterControllerHash();
+
+  @$internal
+  @override
+  AccountFilterController create() => AccountFilterController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$accountFilterControllerHash() =>
+    r'f15eb83c10fb69478db7897ee1eaab115f2a0040';
+
+abstract class _$AccountFilterController extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(filteredTransactions)
 final filteredTransactionsProvider = FilteredTransactionsProvider._();
 
@@ -206,4 +259,4 @@ final class FilteredTransactionsProvider
 }
 
 String _$filteredTransactionsHash() =>
-    r'512b5a2201d9e55449c3ace9a73a2eede2f7a504';
+    r'e8ae36113b4770e79d9bf37ef92277cb7ded8a28';

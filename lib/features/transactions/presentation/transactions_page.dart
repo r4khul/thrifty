@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thrifty/features/analytics/domain/financial_data_models.dart';
@@ -13,11 +12,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/util/theme_extension.dart';
 import '../../../features/settings/presentation/providers/currency_provider.dart';
-import '../../auth/presentation/providers/auth_providers.dart';
 import '../../categories/domain/category_entity.dart';
 import '../../categories/presentation/providers/category_map_provider.dart';
 import '../../categories/presentation/widgets/category_assets.dart';
 import '../../profile/presentation/providers/user_profile_provider.dart';
+import '../../accounts/presentation/providers/account_providers.dart';
+import '../../accounts/domain/account_entity.dart';
 import '../data/transaction_repository_provider.dart';
 import '../domain/transaction_entity.dart';
 import 'providers/date_filter_provider.dart';
@@ -98,7 +98,7 @@ class TransactionsPage extends ConsumerWidget {
                   if (transactions.isEmpty) {
                     return _EmptyState(
                       key: const ValueKey('empty'),
-                      onAction: () => _openAddTransaction(context),
+                      onAction: () => _openAddTransaction(context, ref),
                     );
                   }
                   return categoryMapAsync.when(
@@ -146,7 +146,7 @@ class TransactionsPage extends ConsumerWidget {
                             },
                             blendMode: BlendMode.dstIn,
                             child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
                               itemCount: transactions.length,
                               itemExtent: 72,
                               itemBuilder: (context, index) {
@@ -217,14 +217,27 @@ class TransactionsPage extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddTransaction(context),
+        onPressed: () => _openAddTransaction(context, ref),
         tooltip: l10n.addTransaction,
         child: const Icon(Icons.add_rounded, size: 28),
       ),
     );
   }
 
-  void _openAddTransaction(BuildContext context) {
+  void _openAddTransaction(BuildContext context, WidgetRef ref) {
+    final accountsState = ref.read(accountControllerProvider);
+    final hasAccountsData = accountsState.hasValue;
+    final accounts = accountsState.value ?? const <AccountEntity>[];
+
+    // Only block when we are certain there are no accounts.
+    // If accounts are still loading/refreshing, allow navigation and validate in form.
+    if (hasAccountsData && accounts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add an account first')),
+      );
+      context.push('/add-account');
+      return;
+    }
     context.push('/add-tx');
   }
 
@@ -275,40 +288,176 @@ class _CashFlowSummarySection extends ConsumerWidget {
     return isObscured ? '••••' : text;
   }
 
-  String _getFilterDetails(DateRangeFilter filter) {
-    if (filter.label == 'All Time') return 'Lifetime';
+  void _showAccountSelector(
+    BuildContext context,
+    WidgetRef ref,
+    List<AccountEntity> accounts,
+    String? selectedAccountId,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).canvasColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      'Select Account',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      itemCount: accounts.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          final isSelected = selectedAccountId == null;
+                          return Card(
+                            elevation: 0,
+                            color: isSelected
+                                ? AppColors.primary.withValues(alpha: 0.1)
+                                : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest
+                                      .withValues(alpha: 0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: ListTile(
+                              onTap: () {
+                                ref
+                                    .read(
+                                      accountFilterControllerProvider.notifier,
+                                    )
+                                    .selectAccount(null);
+                                Navigator.pop(context);
+                              },
+                              leading: const CircleAvatar(
+                                backgroundColor: AppColors.primary,
+                                child: Icon(
+                                  Icons.account_balance_wallet_rounded,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              title: const Text(
+                                'All Accounts',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppColors.primary,
+                                    )
+                                  : null,
+                            ),
+                          );
+                        }
 
-    final dfDateYear = DateFormat('d MMM yyyy');
-    final dfDayMonth = DateFormat('d MMM');
-    final dfMonthYear = DateFormat('MMM yyyy');
-    final dfYear = DateFormat('yyyy');
+                        final account = accounts[index - 1];
+                        final isSelected = selectedAccountId == account.id;
+                        final color = Color(account.colorValue);
 
-    // For single day (Today or selected single date)
-    if (filter.start.year == filter.end.year &&
-        filter.start.month == filter.end.month &&
-        filter.start.day == filter.end.day) {
-      return dfDateYear.format(filter.start);
-    }
-
-    if (filter.label == 'This Month') {
-      return dfMonthYear.format(filter.start);
-    }
-
-    if (filter.label == 'This Year') {
-      return dfYear.format(filter.start);
-    }
-
-    // Range display
-    return '${dfDayMonth.format(filter.start)} - ${dfDayMonth.format(filter.end)}';
+                        return Card(
+                          elevation: 0,
+                          margin: const EdgeInsets.only(top: 8),
+                          color: isSelected
+                              ? color.withValues(alpha: 0.1)
+                              : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isSelected ? color : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: ListTile(
+                            onTap: () {
+                              ref
+                                  .read(
+                                    accountFilterControllerProvider.notifier,
+                                  )
+                                  .selectAccount(account.id);
+                              Navigator.pop(context);
+                            },
+                            leading: CircleAvatar(
+                              backgroundColor: color,
+                              child: Icon(
+                                IconData(
+                                  account.iconCodePoint,
+                                  fontFamily: 'MaterialIcons',
+                                ),
+                                color: Colors.white,
+                              ),
+                            ),
+                            title: Text(
+                              account.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Text(account.bankName),
+                            trailing: isSelected
+                                ? Icon(Icons.check_circle_rounded, color: color)
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final isObscured = ref.watch(privacyModeProvider);
-    final currentFilter = ref.watch(dateFilterControllerProvider);
+    final selectedAccountId = ref.watch(accountFilterControllerProvider);
+    final allTransactions = ref.watch(transactionControllerProvider).value;
+    final accountsList =
+        ref.watch(accountControllerProvider).value ?? <AccountEntity>[];
+
+    final selectedAccount = accountsList
+        .where((AccountEntity a) => a.id == selectedAccountId)
+        .firstOrNull;
 
     var totalIncome = 0.0;
     var totalExpense = 0.0;
@@ -328,7 +477,21 @@ class _CashFlowSummarySection extends ConsumerWidget {
       }
     }
 
-    final net = totalIncome - totalExpense;
+    final scopedAllTransactions = (allTransactions ?? transactions).where((tx) {
+      if (selectedAccountId == null) return true;
+      return tx.accountId == selectedAccountId;
+    });
+
+    final netWorthOrBalance = scopedAllTransactions.fold<double>(
+      0.0,
+      (sum, tx) => sum + (tx.isIncome ? tx.absoluteAmount : -tx.absoluteAmount),
+    );
+
+    final periodNetChange = transactions.fold<double>(
+      0.0,
+      (sum, tx) => sum + (tx.isIncome ? tx.absoluteAmount : -tx.absoluteAmount),
+    );
+
     final categoryBreakdown = expenseByCategory.entries.map((entry) {
       final category = categoryMap[entry.key];
       final percentage = totalExpense == 0
@@ -364,7 +527,7 @@ class _CashFlowSummarySection extends ConsumerWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -376,38 +539,57 @@ class _CashFlowSummarySection extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.incomeVsExpense,
-                          style: Theme.of(context).textTheme.titleSmall
+                          selectedAccount != null
+                              ? selectedAccount.name
+                              : 'Net Worth',
+                          style: Theme.of(context).textTheme.labelLarge
                               ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.2,
+                                color: AppColors.grey500,
+                                fontWeight: FontWeight.w700,
                               ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.grey900.withValues(alpha: 0.5)
-                                : AppColors.grey100.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.grey800.withValues(alpha: 0.3)
-                                  : AppColors.grey200.withValues(alpha: 0.5),
+                        const SizedBox(height: 2),
+                        RichText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          text: TextSpan(
+                            text: _obscureText(
+                              FormattingUtils.formatFullCurrency(
+                                netWorthOrBalance,
+                                symbol: currencySymbol,
+                              ),
+                              isObscured,
                             ),
-                          ),
-                          child: Text(
-                            _getFilterDetails(currentFilter),
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: isDark
-                                  ? AppColors.grey500
-                                  : AppColors.grey600,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 9.5,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: isDark
+                                      ? Colors.white
+                                      : AppColors.grey800,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 26,
+                                  height: 1.1,
+                                ),
+                            children: [
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.top,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 6, top: 4),
+                                  child: Text(
+                                    '(${periodNetChange >= 0 ? '+' : '-'}${FormattingUtils.formatCompact(periodNetChange.abs(), symbol: currencySymbol)})',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: periodNetChange >= 0
+                                              ? AppColors.success
+                                              : AppColors.error,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 10,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -426,6 +608,25 @@ class _CashFlowSummarySection extends ConsumerWidget {
                       color: AppColors.grey500,
                     ),
                     tooltip: isObscured ? 'Show' : 'Hide',
+                  ),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    onPressed: accountsList.isNotEmpty
+                        ? () {
+                            _showAccountSelector(
+                              context,
+                              ref,
+                              accountsList,
+                              selectedAccountId,
+                            );
+                          }
+                        : null,
+                    icon: const Icon(
+                      Icons.credit_card_rounded,
+                      size: 18,
+                      color: AppColors.grey500,
+                    ),
+                    tooltip: 'Select account',
                   ),
                   IconButton(
                     visualDensity: VisualDensity.compact,
@@ -458,7 +659,7 @@ class _CashFlowSummarySection extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
@@ -493,43 +694,6 @@ class _CashFlowSummarySection extends ConsumerWidget {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 6),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.grey100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.net,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppColors.grey500,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      _obscureText(
-                        FormattingUtils.formatCompact(
-                          net,
-                          symbol: currencySymbol,
-                        ),
-                        isObscured,
-                      ),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: net >= 0 ? AppColors.success : AppColors.error,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
@@ -1241,18 +1405,6 @@ class _AppDrawer extends ConsumerWidget {
                 },
               ),
               const Spacer(),
-
-              // Logout
-              const Divider(height: 1),
-              _DrawerItem(
-                icon: Icons.logout_rounded,
-                label: l10n.signOut,
-                color: AppColors.error,
-                onTap: () {
-                  ref.read(authControllerProvider.notifier).logout();
-                  Navigator.pop(context); // Close drawer
-                },
-              ),
               const SizedBox(height: 20),
             ],
           ),
@@ -1267,26 +1419,23 @@ class _DrawerItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.color,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      leading: Icon(icon, color: color ?? AppColors.grey500, size: 24),
+      leading: Icon(icon, color: AppColors.grey500, size: 24),
       title: Text(
         label,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
-          fontWeight: FontWeight.w500,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -1335,7 +1484,7 @@ class _SummaryHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get minExtent => 0.0;
 
   @override
-  double get maxExtent => 170.0;
+  double get maxExtent => 180.0;
 
   @override
   Widget build(
