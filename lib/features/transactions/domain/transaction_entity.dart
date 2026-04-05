@@ -31,6 +31,9 @@ abstract class TransactionEntity with _$TransactionEntity {
     /// The unique identifier of the associated category.
     @JsonKey(name: 'category') required String categoryId,
 
+    /// The unique identifier of the associated account.
+    String? accountId,
+
     /// Authoritative timestamp of when the transaction occurred.
     @JsonKey(name: 'ts') required DateTime timestamp,
 
