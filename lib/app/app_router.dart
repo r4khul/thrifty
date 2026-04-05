@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../features/accounts/presentation/accounts_page.dart';
+import '../features/accounts/presentation/add_edit_account_page.dart';
 import '../features/analytics/presentation/financial_overview_page.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/auth/presentation/onboarding_page.dart';
@@ -115,6 +116,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/accounts',
         builder: (context, state) => const AccountsPage(),
+      ),
+      GoRoute(
+        path: '/add-account',
+        builder: (context, state) => const AddEditAccountPage(),
       ),
       GoRoute(
         path: '/categories',

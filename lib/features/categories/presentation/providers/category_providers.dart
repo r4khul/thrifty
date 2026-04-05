@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/category_repository_provider.dart';
@@ -11,19 +13,26 @@ class CategoryController extends _$CategoryController {
   Stream<List<CategoryEntity>> build() async* {
     final repository = ref.watch(categoryRepositoryProvider);
 
-    // Check existing state
+    // Emit local categories immediately so UI can render empty-state cards
+    // instead of staying in loading state.
     try {
       final categories = await repository.getAll();
+      yield categories;
+
       if (categories.isEmpty) {
-        // Try to pull from remote first if fresh
-        try {
-          await repository.syncWithRemote();
-        } on Object catch (_) {
-          // If sync fails (e.g. no internet), we stay as a blank slate
-        }
+        unawaited(
+          Future<void>(() async {
+            try {
+              await repository.syncWithRemote();
+            } on Object catch (_) {
+              // If sync fails (e.g. no internet), keep local state.
+            }
+          }),
+        );
       }
     } on Object catch (_) {
-      // Basic protection against DB init issues
+      // Fall back to an empty list if initial fetch fails.
+      yield const <CategoryEntity>[];
     }
 
     yield* repository.watchAll();

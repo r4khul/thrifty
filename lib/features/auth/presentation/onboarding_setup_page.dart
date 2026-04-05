@@ -101,7 +101,7 @@ class _OnboardingSetupPageState extends ConsumerState<OnboardingSetupPage> {
         .completeOnboarding(pin: pin, enableBiometric: _enableBiometric);
 
     if (!mounted) return;
-    context.go('/home');
+    context.go('/add-account');
   }
 
   @override

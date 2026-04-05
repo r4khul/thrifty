@@ -16,11 +16,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   static const _slides = [
     _SlideData(
-      title: 'Spend with intention',
+      title: 'Thrifty.',
       description:
-          'See where every rupee goes and build better money habits in minutes.',
+          'Your pocket finance manager. Track spending, manage accounts, and build better money habits.',
       showLogo: true,
-      icon: Icons.insights_rounded,
     ),
     _SlideData(
       title: 'Track accounts effortlessly',
@@ -143,7 +142,7 @@ class _OnboardingSlide extends StatelessWidget {
               width: 104,
               height: 104,
             )
-          else
+          else if (item.icon != null)
             Container(
               width: 92,
               height: 92,
@@ -152,11 +151,11 @@ class _OnboardingSlide extends StatelessWidget {
                 color: iconBackground,
                 border: Border.all(color: iconBorder),
               ),
-              child: Icon(item.icon, size: 38, color: AppColors.primary),
+              child: Icon(item.icon!, size: 38, color: AppColors.primary),
             ),
           const SizedBox(height: 22),
-          if (item.showLogo) ...[
-            Icon(item.icon, size: 34, color: AppColors.primary),
+          if (item.showLogo && item.icon != null) ...[
+            Icon(item.icon!, size: 34, color: AppColors.primary),
             const SizedBox(height: 18),
           ],
           Text(
@@ -186,11 +185,11 @@ class _SlideData {
     required this.title,
     required this.description,
     required this.showLogo,
-    required this.icon,
+    this.icon,
   });
 
   final String title;
   final String description;
   final bool showLogo;
-  final IconData icon;
+  final IconData? icon;
 }
