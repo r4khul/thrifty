@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:thrifty/core/theme/app_colors.dart';
 import 'package:thrifty/core/theme/app_typography.dart';
@@ -84,7 +85,13 @@ class _AddEditAccountPageState extends ConsumerState<AddEditAccountPage> {
 
     try {
       await ref.read(accountControllerProvider.notifier).upsertAccount(acc);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        if (context.canPop()) {
+          context.pop(true);
+        } else {
+          context.go('/home');
+        }
+      }
     } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -111,7 +118,13 @@ class _AddEditAccountPageState extends ConsumerState<AddEditAccountPage> {
         title: Text(_isEditing ? 'Edit Account' : 'Add Account'),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
         ),
         actions: [
           if (_loading)
@@ -212,16 +225,6 @@ class _AddEditAccountPageState extends ConsumerState<AddEditAccountPage> {
             ),
             const SizedBox(height: 28),
 
-            // ── Account Type ─────────────────────────────────────────────────
-            _SectionLabel('Account Type'),
-            const SizedBox(height: 12),
-            _AccountTypeSelector(
-              selected: _selectedType,
-              onChanged: (t) => setState(() => _selectedType = t),
-              isDark: isDark,
-            ),
-            const SizedBox(height: 28),
-
             // ── Card Colour ──────────────────────────────────────────────────
             _SectionLabel('Card Color'),
             const SizedBox(height: 12),
@@ -306,56 +309,6 @@ class _SectionLabel extends StatelessWidget {
         color: AppColors.grey500,
         letterSpacing: 0.8,
       ),
-    );
-  }
-}
-
-class _AccountTypeSelector extends StatelessWidget {
-  const _AccountTypeSelector({
-    required this.selected,
-    required this.onChanged,
-    required this.isDark,
-  });
-
-  final AccountType selected;
-  final ValueChanged<AccountType> onChanged;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: AccountType.values.map((type) {
-        final isSelected = type == selected;
-        return GestureDetector(
-          onTap: () => onChanged(type),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primary
-                  : (isDark ? AppColors.darkCard : AppColors.lightCard),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.primary
-                    : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              ),
-            ),
-            child: Text(
-              type.displayName,
-              style: AppTypography.labelLarge.copyWith(
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.white : AppColors.grey800),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }

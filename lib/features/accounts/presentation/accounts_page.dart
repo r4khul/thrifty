@@ -8,6 +8,7 @@ import 'package:thrifty/core/theme/app_typography.dart';
 import 'package:thrifty/core/util/theme_extension.dart';
 import 'package:thrifty/features/accounts/domain/account_entity.dart';
 import 'package:thrifty/features/accounts/presentation/providers/account_providers.dart';
+import 'package:thrifty/features/accounts/presentation/account_details_page.dart';
 import 'add_edit_account_page.dart';
 
 // ─── Max cards shown inline on the wallet screen ─────────────────────────────
@@ -117,7 +118,7 @@ class _Body extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 16),
             child: _AccountCard(
               account: account,
-              onTap: () => _openEditAccount(context, account),
+              onTap: () => _openAccountDetails(context, account),
             ),
           );
         }),
@@ -135,11 +136,10 @@ class _Body extends StatelessWidget {
     );
   }
 
-  void _openEditAccount(BuildContext context, AccountEntity account) {
-    Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => AddEditAccountPage(account: account),
+  void _openAccountDetails(BuildContext context, AccountEntity account) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AccountDetailsPage(account: account),
       ),
     );
   }
@@ -495,10 +495,9 @@ class _AllAccountsSheet extends StatelessWidget {
                         account: acc,
                         onTap: () {
                           Navigator.pop(context);
-                          Navigator.of(context).push<bool>(
-                            MaterialPageRoute(
-                              fullscreenDialog: true,
-                              builder: (_) => AddEditAccountPage(account: acc),
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => AccountDetailsPage(account: acc),
                             ),
                           );
                         },
