@@ -6,7 +6,6 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/auth/presentation/providers/auth_providers.dart';
 import 'daos/account_dao.dart';
 import 'daos/attachment_dao.dart';
 import 'daos/category_dao.dart';
@@ -21,15 +20,7 @@ part 'database_providers.g.dart';
 class DbName extends _$DbName {
   @override
   String build() {
-    final authState = ref.watch(authControllerProvider);
-    return authState.maybeWhen(
-      data: (user) => user != null
-          ? 'db_${user.email.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.sqlite'
-          : 'db_default.sqlite',
-      // If we are loading (e.g. refreshing session), preserve the current name
-      loading: () => stateOrNull ?? 'db_default.sqlite',
-      orElse: () => stateOrNull ?? 'db_default.sqlite',
-    );
+    return 'db_default.sqlite';
   }
 }
 

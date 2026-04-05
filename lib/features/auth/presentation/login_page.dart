@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:thrifty/l10n/app_localizations.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../profile/presentation/providers/user_profile_provider.dart';
 import 'providers/auth_providers.dart';
+import 'widgets/pin_code_field.dart';
 
-/// Auth Feature Presentation: User login screen.
-/// Implements state-driven UI for authentication with Design System compliance.
+/// Local security unlock screen for returning users.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -16,34 +17,91 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _emailController = TextEditingController();
   final _pinController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _rememberMe = false;
+  final _localAuth = LocalAuthentication();
+  bool _checkingBiometric = true;
+  bool _biometricAvailable = false;
+  String? _pinError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricAvailability();
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
     _pinController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      await ref
-          .read(authControllerProvider.notifier)
-          .login(
-            email: _emailController.text.trim(),
-            pin: _pinController.text.trim(),
-            rememberMe: _rememberMe,
-          );
+  Future<void> _loadBiometricAvailability() async {
+    final enabled = await ref
+        .read(authControllerProvider.notifier)
+        .isBiometricEnabled();
+    var available = false;
+
+    if (enabled) {
+      try {
+        final canCheck = await _localAuth.canCheckBiometrics;
+        final supported = await _localAuth.isDeviceSupported();
+        available = canCheck && supported;
+      } on Object {
+        available = false;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _biometricAvailable = available;
+        _checkingBiometric = false;
+      });
+    }
+  }
+
+  Future<void> _handleUnlock() async {
+    final l10n = AppLocalizations.of(context)!;
+    final pin = _pinController.text.trim();
+    if (pin.isEmpty) {
+      setState(() => _pinError = l10n.pinRequired);
+      return;
+    }
+    if (pin.length != 4) {
+      setState(() => _pinError = l10n.pinLengthError);
+      return;
+    }
+
+    setState(() => _pinError = null);
+    await ref.read(authControllerProvider.notifier).unlockWithPin(pin: pin);
+  }
+
+  Future<void> _unlockWithBiometric() async {
+    try {
+      final didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Verify your identity to unlock Thrifty',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+          useErrorDialogs: false,
+        ),
+      );
+
+      if (didAuthenticate && mounted) {
+        await ref.read(authControllerProvider.notifier).unlockWithBiometric();
+      }
+    } on Object {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Biometric authentication failed.')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Listen for errors to show snackbars
+    final userProfile = ref.watch(userProfileControllerProvider).asData?.value;
+
     ref.listen(authControllerProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stack) {
@@ -63,145 +121,102 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
+    final greetingName = userProfile?.name.trim().isNotEmpty == true
+        ? userProfile!.name
+        : 'there';
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 80),
-                Text(
-                  l10n.welcomeBack,
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 48),
+              Center(
+                child: Container(
+                  width: 88,
+                  height: 88,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
+                  padding: const EdgeInsets.all(14),
+                  child: Image.asset('assets/icons/app_icon_without_bg.png'),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.signInToManage,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(color: AppColors.grey500),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Welcome back, $greetingName',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 48),
-
-                // Email Field
-                Text(
-                  l10n.emailAddress,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(hintText: l10n.emailHint),
-                  keyboardType: TextInputType.emailAddress,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  enabled: !isLoading,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return l10n.emailRequired;
-                    }
-                    if (!value.contains('@')) {
-                      return l10n.invalidEmail;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // PIN Field
-                Text(
-                  l10n.securityPIN,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _pinController,
-                  decoration: InputDecoration(
-                    hintText: l10n.pinHint,
-                    counterText: '', // Hide default counter
-                  ),
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: Theme.of(context).textTheme.bodyLarge,
-
-                  enabled: !isLoading,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return l10n.pinRequired;
-                    }
-                    if (value.length != 4) {
-                      return l10n.pinLengthError;
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                // Remember Me
-                MergeSemantics(
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _rememberMe,
-                        onChanged: isLoading
-                            ? null
-                            : (value) =>
-                                  setState(() => _rememberMe = value ?? false),
-                        activeColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 4,
-                      ), // Reduced spacing slightly for tighter grouping
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: isLoading
-                              ? null
-                              : () =>
-                                    setState(() => _rememberMe = !_rememberMe),
-                          child: Text(
-                            l10n.rememberMe,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppColors.grey500),
-                            overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Unlock your wallet with your PIN',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: AppColors.grey500),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                l10n.securityPIN,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const SizedBox(height: 8),
+              PinCodeField(
+                controller: _pinController,
+                enabled: !isLoading,
+                hintText: l10n.pinHint,
+                errorText: _pinError,
+                autofocus: true,
+                obscureText: true,
+                onChanged: (_) {
+                  if (_pinError != null) {
+                    setState(() => _pinError = null);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Enter 4 digits',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.grey500),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : _handleUnlock,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                        )
+                      : const Text('Unlock'),
                 ),
-                const SizedBox(height: 40),
-
-                // Login Button
+              ),
+              const SizedBox(height: 12),
+              if (!_checkingBiometric && _biometricAvailable)
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : _handleLogin,
-                    child: isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(l10n.signIn),
+                  child: OutlinedButton.icon(
+                    onPressed: isLoading ? null : _unlockWithBiometric,
+                    icon: const Icon(Icons.fingerprint_rounded),
+                    label: const Text('Use fingerprint'),
                   ),
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
       ),

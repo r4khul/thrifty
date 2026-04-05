@@ -5,6 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../features/accounts/presentation/accounts_page.dart';
 import '../features/analytics/presentation/financial_overview_page.dart';
 import '../features/auth/presentation/login_page.dart';
+import '../features/auth/presentation/onboarding_page.dart';
+import '../features/auth/presentation/onboarding_setup_page.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/auth/presentation/splash_page.dart';
 import '../features/categories/presentation/categories_page.dart';
@@ -40,26 +42,36 @@ GoRouter router(Ref ref) {
       }
 
       final session = authState.value;
-      final isLoggingIn = state.matchedLocation == '/login';
+      final location = state.matchedLocation;
+      final isLoggingIn = location == '/login';
+      final isOnboarding =
+          location == '/onboarding' || location == '/onboarding/setup';
+      final isNewUser = isNewUserAsync.value ?? true;
 
-      // 1. Unauthenticated State
+      // 1. New user must complete onboarding and setup.
+      if (isNewUser) {
+        if (location == '/') return '/onboarding';
+        if (!isOnboarding) return '/onboarding';
+        return null;
+      }
+
+      // 2. Returning users must unlock before entering app routes.
       if (session == null) {
-        // If they are on a registration-required flow (or just logged out)
-        // and we are not currently on login, force them there.
-        if (!isLoggingIn) {
-          return '/login';
-        }
-        return null; // Stay on login
+        if (!isLoggingIn) return '/login';
+        return null;
       }
 
-      // 2. Authenticated Redirection
+      // 3. Authenticated redirection.
       if (isLoggingIn) {
-        final destination = state.uri.queryParameters['from'] ?? '/home';
-        return destination == '/login' ? '/home' : destination;
+        return '/home';
       }
 
-      // 3. Exit Splash
-      if (state.matchedLocation == '/') {
+      if (isOnboarding) {
+        return '/home';
+      }
+
+      // 4. Exit splash after state resolves.
+      if (location == '/') {
         return '/home';
       }
 
@@ -76,6 +88,14 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const TransactionsPage(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: '/onboarding/setup',
+        builder: (context, state) => const OnboardingSetupPage(),
+      ),
       GoRoute(
         path: '/add-tx',
         builder: (context, state) => const AddEditTransactionPage(),

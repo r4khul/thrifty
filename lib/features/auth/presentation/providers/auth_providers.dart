@@ -16,10 +16,7 @@ Future<bool> isNewUser(Ref ref) {
 class AuthController extends _$AuthController {
   @override
   FutureOr<AuthSession?> build() async {
-    // Auth Lifecycle: Read Flow (App Startup)
-    // 1. Injects AuthRepository
-    // 2. Attempts to recover session from secure storage
-    // 3. Emits authenticated (Session) or unauthenticated (null) state
+    // Startup in locked state by default; unlock is runtime only.
     final repository = ref.watch(authRepositoryProvider);
     return repository.getSession();
   }
@@ -31,33 +28,53 @@ class AuthController extends _$AuthController {
 
   /// Transitions the app to an unauthenticated state.
   Future<void> logout() async {
-    // Auth Lifecycle: Clear Flow
-    // 1. Removes session from secure storage via repository
-    // 2. Resets local state to unauthenticated
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       await ref.read(authRepositoryProvider).clearSession();
-      ref.invalidate(isNewUserProvider);
       return null;
     });
   }
 
-  /// Attempts to authenticate the user and updates the app state.
-  Future<void> login({
-    required String email,
-    required String pin,
-    required bool rememberMe,
-  }) async {
-    // Auth Lifecycle: Write Flow
-    // 1. Triggers repository login (validation + persistence)
-    // 2. Updates global state with the new session
+  /// Unlocks the app with the configured PIN.
+  Future<void> unlockWithPin({required String pin}) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final session = await ref
           .read(authRepositoryProvider)
-          .login(email: email, pin: pin, rememberMe: rememberMe);
-      ref.invalidate(isNewUserProvider);
+          .unlockWithPin(pin: pin);
       return session;
     });
+  }
+
+  /// Completes first-time setup and unlocks the app.
+  Future<void> completeOnboarding({
+    required String pin,
+    required bool enableBiometric,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.setupSecurity(
+        pin: pin,
+        enableBiometric: enableBiometric,
+      );
+      ref.invalidate(isNewUserProvider);
+      return repository.unlockWithPin(pin: pin);
+    });
+  }
+
+  /// Unlocks with biometric verification that already happened in UI layer.
+  Future<void> unlockWithBiometric() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final session = await ref
+          .read(authRepositoryProvider)
+          .unlockWithBiometric();
+      return session;
+    });
+  }
+
+  Future<bool> isBiometricEnabled() {
+    return ref.read(authRepositoryProvider).isBiometricEnabled();
   }
 }

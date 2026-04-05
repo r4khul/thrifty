@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:thrifty/core/providers/locale_provider.dart';
@@ -17,23 +19,27 @@ class NotificationController extends _$NotificationController {
     final repository = ref.watch(notificationRepositoryProvider);
     final settings = repository.getSettings();
 
-    // Listen to transaction changes to update schedule
+    // Listen to transaction changes to update schedule.
     ref.listen(transactionControllerProvider, (previous, next) {
       _updateSchedule();
-    }, fireImmediately: true);
+    });
 
-    // Listen to locale changes to update notification language
+    // Listen to locale changes to update notification language.
     ref.listen(localeControllerProvider, (previous, next) {
       if (previous != next) {
         _updateSchedule();
       }
     });
 
+    // Do an initial scheduling pass using the local settings loaded above.
+    // This avoids reading `state` before notifier initialization completes.
+    unawaited(_updateSchedule(settingsOverride: settings));
+
     return settings;
   }
 
-  Future<void> _updateSchedule() async {
-    final settings = state;
+  Future<void> _updateSchedule({NotificationSettings? settingsOverride}) async {
+    final settings = settingsOverride ?? state;
     final service = NotificationService();
 
     if (!settings.isEnabled) {

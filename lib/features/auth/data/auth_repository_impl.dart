@@ -11,68 +11,30 @@ class AuthRepositoryImpl implements AuthRepository {
     : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
-  static const _sessionKey = 'auth_session';
-  static const _registryKey = 'user_registry';
+  static const _pinKey = 'auth_pin';
+  static const _biometricEnabledKey = 'auth_biometric_enabled';
+  static const _onboardingDoneKey = 'onboarding_done';
+
+  AuthSession? _session;
 
   @override
   Future<AuthSession?> getSession() async {
-    try {
-      final jsonString = await _storage.read(key: _sessionKey);
-      if (jsonString == null) return null;
-      return AuthSession.fromJson(
-        jsonDecode(jsonString) as Map<String, dynamic>,
-      );
-    } on Object catch (_) {
-      throw const AuthFailure('Failed to retrieve authentication session.');
-    }
+    return _session;
   }
 
   @override
-  Future<void> saveSession(AuthSession session) async {
+  Future<AuthSession> unlockWithPin({required String pin}) async {
     try {
-      final jsonString = jsonEncode(session.toJson());
-      await _storage.write(key: _sessionKey, value: jsonString);
-    } on Object catch (_) {
-      throw const AuthFailure('Failed to persist authentication session.');
-    }
-  }
-
-  @override
-  Future<AuthSession> login({
-    required String email,
-    required String pin,
-    required bool rememberMe,
-  }) async {
-    try {
-      // 1. Get user registry
-      final registryJson = await _storage.read(key: _registryKey);
-      var registry = <String, String>{};
-      if (registryJson != null) {
-        registry = Map<String, String>.from(
-          jsonDecode(registryJson) as Map<dynamic, dynamic>,
-        );
+      final storedPin = await _storage.read(key: _pinKey);
+      if (storedPin == null) {
+        throw const AuthFailure('Security PIN is not configured yet.');
+      }
+      if (storedPin != pin) {
+        throw const AuthFailure('Incorrect PIN.');
       }
 
-      // 2. Check if user exists and validate/register
-      if (registry.containsKey(email)) {
-        if (registry[email] != pin) {
-          throw const AuthFailure('Invalid PIN for this email.');
-        }
-      } else {
-        // Register new user
-        registry[email] = pin;
-        await _storage.write(key: _registryKey, value: jsonEncode(registry));
-      }
-
-      // 3. Create and persist session
-      final session = AuthSession(email: email, rememberMe: rememberMe);
-
-      if (rememberMe) {
-        await saveSession(session);
-      } else {
-        await clearSession();
-      }
-
+      final session = _createSession();
+      _session = session;
       return session;
     } on AuthFailure {
       rethrow;
@@ -82,23 +44,68 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> clearSession() async {
-    try {
-      await _storage.delete(key: _sessionKey);
-    } on Object catch (_) {
-      throw const AuthFailure('Failed to clear authentication session.');
+  Future<void> setupSecurity({
+    required String pin,
+    required bool enableBiometric,
+  }) async {
+    if (pin.length != 4 || int.tryParse(pin) == null) {
+      throw const AuthFailure('PIN must be exactly 4 digits.');
     }
+
+    try {
+      await _storage.write(key: _pinKey, value: pin);
+      await _storage.write(
+        key: _biometricEnabledKey,
+        value: jsonEncode(enableBiometric),
+      );
+      await _storage.write(key: _onboardingDoneKey, value: jsonEncode(true));
+    } on Object catch (_) {
+      throw const AuthFailure('Failed to save security setup.');
+    }
+  }
+
+  @override
+  Future<AuthSession> unlockWithBiometric() async {
+    final hasSetup = !(await isNewUser());
+    if (!hasSetup) {
+      throw const AuthFailure('Security is not configured yet.');
+    }
+
+    final session = _createSession();
+    _session = session;
+    return session;
+  }
+
+  @override
+  Future<void> clearSession() async {
+    _session = null;
   }
 
   @override
   Future<bool> isNewUser() async {
     try {
-      final registryJson = await _storage.read(key: _registryKey);
-      if (registryJson == null) return true;
-      final registry = jsonDecode(registryJson) as Map<dynamic, dynamic>;
-      return registry.isEmpty;
+      final onboardingDone = await _storage.read(key: _onboardingDoneKey);
+      final pin = await _storage.read(key: _pinKey);
+      if (onboardingDone == null || pin == null) return true;
+
+      return jsonDecode(onboardingDone) != true;
     } on Object catch (_) {
       return true;
     }
+  }
+
+  @override
+  Future<bool> isBiometricEnabled() async {
+    try {
+      final value = await _storage.read(key: _biometricEnabledKey);
+      if (value == null) return false;
+      return jsonDecode(value) == true;
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  AuthSession _createSession() {
+    return const AuthSession(email: 'local_user', rememberMe: false);
   }
 }

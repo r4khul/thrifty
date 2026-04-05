@@ -3,22 +3,27 @@ import 'auth_session.dart';
 /// Auth Feature Domain: Interface for authentication operations.
 /// Boundary Rules: Pure Dart only.
 abstract class AuthRepository {
-  /// Retrieves the current active session, if any.
+  /// Retrieves the current active in-memory session, if any.
   Future<AuthSession?> getSession();
 
-  /// Persists a new or updated [session].
-  Future<void> saveSession(AuthSession session);
+  /// Unlocks the app using the configured [pin].
+  Future<AuthSession> unlockWithPin({required String pin});
 
-  /// Authenticates a user with [email] and [pin].
-  Future<AuthSession> login({
-    required String email,
+  /// Creates security setup for first-time user.
+  Future<void> setupSecurity({
     required String pin,
-    required bool rememberMe,
+    required bool enableBiometric,
   });
 
-  /// Removes the current active session.
+  /// Creates an unlocked session after successful biometric verification.
+  Future<AuthSession> unlockWithBiometric();
+
+  /// Removes the current active in-memory session.
   Future<void> clearSession();
 
-  /// Checks if the app is being run for the first time or if no users are registered.
+  /// Checks if the app is being run for the first time.
   Future<bool> isNewUser();
+
+  /// Returns whether biometric unlock is enabled.
+  Future<bool> isBiometricEnabled();
 }
