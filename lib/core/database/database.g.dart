@@ -69,7 +69,7 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0xFF2E5BFF),
+    defaultValue: const Constant(0xFF6366F1),
   );
   static const VerificationMeta _iconCodePointMeta = const VerificationMeta(
     'iconCodePoint',
@@ -291,8 +291,6 @@ class Account extends DataClass implements Insertable<Account> {
 
   /// Current balance of the account.
   final double balance;
-
-  /// Color ARGB int for UI theming of the card.
   final int colorValue;
 
   /// Icon codepoint for the account (Material icon code).
@@ -665,6 +663,17 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
+    'account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _timestampMeta = const VerificationMeta(
     'timestamp',
   );
@@ -727,6 +736,7 @@ class $TransactionsTable extends Transactions
     id,
     amount,
     categoryId,
+    accountId,
     timestamp,
     note,
     editedLocally,
@@ -765,6 +775,12 @@ class $TransactionsTable extends Transactions
       );
     } else if (isInserting) {
       context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
     }
     if (data.containsKey('timestamp')) {
       context.handle(
@@ -826,6 +842,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
       )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_id'],
+      ),
       timestamp: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}timestamp'],
@@ -868,6 +888,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   /// References [Categories.id].
   final String categoryId;
 
+  /// Optional account/wallet ID associated with this transaction.
+  /// References [Accounts.id] logically; kept nullable for backward compatibility.
+  final String? accountId;
+
   /// Authoritative domain timestamp (stored as epoch millis).
   /// Represents when the transaction actually occurred.
   final int timestamp;
@@ -888,6 +912,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.id,
     required this.amount,
     required this.categoryId,
+    this.accountId,
     required this.timestamp,
     this.note,
     required this.editedLocally,
@@ -900,6 +925,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['id'] = Variable<String>(id);
     map['amount'] = Variable<double>(amount);
     map['category_id'] = Variable<String>(categoryId);
+    if (!nullToAbsent || accountId != null) {
+      map['account_id'] = Variable<String>(accountId);
+    }
     map['timestamp'] = Variable<int>(timestamp);
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
@@ -915,6 +943,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: Value(id),
       amount: Value(amount),
       categoryId: Value(categoryId),
+      accountId: accountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accountId),
       timestamp: Value(timestamp),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       editedLocally: Value(editedLocally),
@@ -932,6 +963,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: serializer.fromJson<String>(json['id']),
       amount: serializer.fromJson<double>(json['amount']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
+      accountId: serializer.fromJson<String?>(json['accountId']),
       timestamp: serializer.fromJson<int>(json['timestamp']),
       note: serializer.fromJson<String?>(json['note']),
       editedLocally: serializer.fromJson<bool>(json['editedLocally']),
@@ -946,6 +978,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'id': serializer.toJson<String>(id),
       'amount': serializer.toJson<double>(amount),
       'categoryId': serializer.toJson<String>(categoryId),
+      'accountId': serializer.toJson<String?>(accountId),
       'timestamp': serializer.toJson<int>(timestamp),
       'note': serializer.toJson<String?>(note),
       'editedLocally': serializer.toJson<bool>(editedLocally),
@@ -958,6 +991,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     String? id,
     double? amount,
     String? categoryId,
+    Value<String?> accountId = const Value.absent(),
     int? timestamp,
     Value<String?> note = const Value.absent(),
     bool? editedLocally,
@@ -967,6 +1001,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     id: id ?? this.id,
     amount: amount ?? this.amount,
     categoryId: categoryId ?? this.categoryId,
+    accountId: accountId.present ? accountId.value : this.accountId,
     timestamp: timestamp ?? this.timestamp,
     note: note.present ? note.value : this.note,
     editedLocally: editedLocally ?? this.editedLocally,
@@ -980,6 +1015,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
       timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
       note: data.note.present ? data.note.value : this.note,
       editedLocally: data.editedLocally.present
@@ -996,6 +1032,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('id: $id, ')
           ..write('amount: $amount, ')
           ..write('categoryId: $categoryId, ')
+          ..write('accountId: $accountId, ')
           ..write('timestamp: $timestamp, ')
           ..write('note: $note, ')
           ..write('editedLocally: $editedLocally, ')
@@ -1010,6 +1047,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     id,
     amount,
     categoryId,
+    accountId,
     timestamp,
     note,
     editedLocally,
@@ -1023,6 +1061,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.id == this.id &&
           other.amount == this.amount &&
           other.categoryId == this.categoryId &&
+          other.accountId == this.accountId &&
           other.timestamp == this.timestamp &&
           other.note == this.note &&
           other.editedLocally == this.editedLocally &&
@@ -1034,6 +1073,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String> id;
   final Value<double> amount;
   final Value<String> categoryId;
+  final Value<String?> accountId;
   final Value<int> timestamp;
   final Value<String?> note;
   final Value<bool> editedLocally;
@@ -1044,6 +1084,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.accountId = const Value.absent(),
     this.timestamp = const Value.absent(),
     this.note = const Value.absent(),
     this.editedLocally = const Value.absent(),
@@ -1055,6 +1096,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     required String id,
     required double amount,
     required String categoryId,
+    this.accountId = const Value.absent(),
     required int timestamp,
     this.note = const Value.absent(),
     this.editedLocally = const Value.absent(),
@@ -1071,6 +1113,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? id,
     Expression<double>? amount,
     Expression<String>? categoryId,
+    Expression<String>? accountId,
     Expression<int>? timestamp,
     Expression<String>? note,
     Expression<bool>? editedLocally,
@@ -1082,6 +1125,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (id != null) 'id': id,
       if (amount != null) 'amount': amount,
       if (categoryId != null) 'category_id': categoryId,
+      if (accountId != null) 'account_id': accountId,
       if (timestamp != null) 'timestamp': timestamp,
       if (note != null) 'note': note,
       if (editedLocally != null) 'edited_locally': editedLocally,
@@ -1095,6 +1139,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<String>? id,
     Value<double>? amount,
     Value<String>? categoryId,
+    Value<String?>? accountId,
     Value<int>? timestamp,
     Value<String?>? note,
     Value<bool>? editedLocally,
@@ -1106,6 +1151,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       id: id ?? this.id,
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
+      accountId: accountId ?? this.accountId,
       timestamp: timestamp ?? this.timestamp,
       note: note ?? this.note,
       editedLocally: editedLocally ?? this.editedLocally,
@@ -1126,6 +1172,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     }
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<String>(accountId.value);
     }
     if (timestamp.present) {
       map['timestamp'] = Variable<int>(timestamp.value);
@@ -1154,6 +1203,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('id: $id, ')
           ..write('amount: $amount, ')
           ..write('categoryId: $categoryId, ')
+          ..write('accountId: $accountId, ')
           ..write('timestamp: $timestamp, ')
           ..write('note: $note, ')
           ..write('editedLocally: $editedLocally, ')
@@ -2453,6 +2503,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required String id,
       required double amount,
       required String categoryId,
+      Value<String?> accountId,
       required int timestamp,
       Value<String?> note,
       Value<bool> editedLocally,
@@ -2465,6 +2516,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<double> amount,
       Value<String> categoryId,
+      Value<String?> accountId,
       Value<int> timestamp,
       Value<String?> note,
       Value<bool> editedLocally,
@@ -2520,6 +2572,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get categoryId => $composableBuilder(
     column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+    column: $table.accountId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2598,6 +2655,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get timestamp => $composableBuilder(
     column: $table.timestamp,
     builder: (column) => ColumnOrderings(column),
@@ -2643,6 +2705,9 @@ class $$TransactionsTableAnnotationComposer
     column: $table.categoryId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
 
   GeneratedColumn<int> get timestamp =>
       $composableBuilder(column: $table.timestamp, builder: (column) => column);
@@ -2718,6 +2783,7 @@ class $$TransactionsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
+                Value<String?> accountId = const Value.absent(),
                 Value<int> timestamp = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<bool> editedLocally = const Value.absent(),
@@ -2728,6 +2794,7 @@ class $$TransactionsTableTableManager
                 id: id,
                 amount: amount,
                 categoryId: categoryId,
+                accountId: accountId,
                 timestamp: timestamp,
                 note: note,
                 editedLocally: editedLocally,
@@ -2740,6 +2807,7 @@ class $$TransactionsTableTableManager
                 required String id,
                 required double amount,
                 required String categoryId,
+                Value<String?> accountId = const Value.absent(),
                 required int timestamp,
                 Value<String?> note = const Value.absent(),
                 Value<bool> editedLocally = const Value.absent(),
@@ -2750,6 +2818,7 @@ class $$TransactionsTableTableManager
                 id: id,
                 amount: amount,
                 categoryId: categoryId,
+                accountId: accountId,
                 timestamp: timestamp,
                 note: note,
                 editedLocally: editedLocally,

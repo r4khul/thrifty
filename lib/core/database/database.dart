@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -29,6 +29,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           // Add the new Accounts table for schema version 4.
           await m.createTable(accounts);
+        }
+        if (from < 5) {
+          // Add optional account binding for transactions.
+          await m.addColumn(transactions, transactions.accountId);
         }
       },
       beforeOpen: (details) async {

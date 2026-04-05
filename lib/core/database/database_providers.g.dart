@@ -46,7 +46,7 @@ final class DbNameProvider extends $NotifierProvider<DbName, String> {
   }
 }
 
-String _$dbNameHash() => r'ac0d66a615f5b1f8580bdb03094c40d53b2dc2c1';
+String _$dbNameHash() => r'0be2bac22a9370a5fa74d216cb8e1cad14ce438c';
 
 /// Derives the database name from auth state.
 /// Persists the name during loading states to avoid flickering and unnecessary DB recreations.

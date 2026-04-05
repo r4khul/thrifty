@@ -84,6 +84,10 @@ class Transactions extends Table {
   /// References [Categories.id].
   TextColumn get categoryId => text()();
 
+  /// Optional account/wallet ID associated with this transaction.
+  /// References [Accounts.id] logically; kept nullable for backward compatibility.
+  TextColumn get accountId => text().nullable()();
+
   /// Authoritative domain timestamp (stored as epoch millis).
   /// Represents when the transaction actually occurred.
   IntColumn get timestamp => integer()();
