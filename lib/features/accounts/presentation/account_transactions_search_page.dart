@@ -104,7 +104,7 @@ class _AccountTransactionsSearchPageState
                         );
                       },
                       loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
+                      error: (_, _) => const SizedBox.shrink(),
                     ),
                   ],
                 ),
@@ -117,7 +117,7 @@ class _AccountTransactionsSearchPageState
         data: (transactions) {
           final categoryMap = categoryMapAsync.value ?? {};
           
-          var filtered = transactions.where((tx) {
+          final filtered = transactions.where((tx) {
             final category = categoryMap[tx.categoryId];
             final matchesSearch = (tx.note?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) || 
                                 (category?.name.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
@@ -150,10 +150,10 @@ class _AccountTransactionsSearchPageState
               final category = categoryMap[tx.categoryId];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Color(category?.color ?? Colors.grey.value).withValues(alpha: 0.1),
+                  backgroundColor: Color(category?.color ?? Colors.grey.toARGB32()).withValues(alpha: 0.1),
                   child: Icon(
                     Icons.category,
-                    color: Color(category?.color ?? Colors.grey.value),
+                    color: Color(category?.color ?? Colors.grey.toARGB32()),
                     size: 20,
                   ),
                 ),

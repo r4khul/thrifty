@@ -131,7 +131,7 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
           transactionsAsync.when(
             data: (txs) {
               final categoryMap = categoryMapAsync.value ?? {};
-              var filtered = txs.where((tx) {
+              final filtered = txs.where((tx) {
                 final category = categoryMap[tx.categoryId];
                 return (tx.note?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
                        (category?.name.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
@@ -261,12 +261,12 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
     }
 
     final categorySpends = expenseByCategory.entries.map((e) {
-      final CategoryEntity? cat = categoryMap[e.key] as CategoryEntity?;
+      final cat = categoryMap[e.key] as CategoryEntity?;
       return CategorySpend(
         categoryId: e.key,
         categoryName: cat?.name ?? 'Unknown',
         categoryIcon: cat?.icon ?? '',
-        categoryColor: cat?.color ?? Colors.grey.value,
+        categoryColor: cat?.color ?? Colors.grey.toARGB32(),
         amount: e.value,
         percentage: totalExpense > 0 ? (e.value / totalExpense) * 100 : 0,
       );
@@ -303,7 +303,6 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
             data: categorySpends,
             totalExpense: totalExpense,
             currencySymbol: currencySymbol,
-            size: 200,
           ),
           const SizedBox(height: 24),
         ],
@@ -327,13 +326,13 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final tx = transactions[index];
-          final CategoryEntity? cat = categoryMap[tx.categoryId] as CategoryEntity?;
+          final cat = categoryMap[tx.categoryId] as CategoryEntity?;
           return ListTile(
             leading: CircleAvatar(
-              backgroundColor: Color(cat?.color ?? Colors.grey.value).withValues(alpha: 0.1),
+              backgroundColor: Color(cat?.color ?? Colors.grey.toARGB32()).withValues(alpha: 0.1),
               child: Icon(
                 Icons.category,
-                color: Color(cat?.color ?? Colors.grey.value),
+                color: Color(cat?.color ?? Colors.grey.toARGB32()),
                 size: 20,
               ),
             ),
