@@ -29,16 +29,6 @@ class AccountDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
-  final TextEditingController _searchController = TextEditingController();
-  bool _sortByDateDesc = true;
-  String _searchQuery = '';
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     // Set account filter for this page
@@ -85,45 +75,32 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
                         'Recent Transactions',
                         style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
                       ),
-                      TextButton.icon(
-                        onPressed: () => _openSearchPage(context),
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                        label: const Text('Show All'),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (value) => setState(() => _searchQuery = value),
-                          decoration: InputDecoration(
-                            hintText: 'Search here...',
-                            prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                            isDense: true,
-                            filled: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide.none,
-                            ),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () => _openSearchPage(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search_rounded, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Search transactions...',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                ),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        onPressed: () => setState(() => _sortByDateDesc = !_sortByDateDesc),
-                        icon: Icon(
-                          _sortByDateDesc ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-                          size: 18,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -131,17 +108,11 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
           transactionsAsync.when(
             data: (txs) {
               final categoryMap = categoryMapAsync.value ?? {};
-              final filtered = txs.where((tx) {
-                final category = categoryMap[tx.categoryId];
-                return (tx.note?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-                       (category?.name.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
-              }).toList();
+              final filtered = txs.toList();
               
-              filtered.sort((a, b) => _sortByDateDesc 
-                  ? b.timestamp.compareTo(a.timestamp) 
-                  : a.timestamp.compareTo(b.timestamp));
+              filtered.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-              return _buildTransactionList(context, filtered.take(10).toList(), categoryMap, currencySymbol);
+              return _buildTransactionList(context, filtered.take(5).toList(), categoryMap, currencySymbol, filtered.length);
             },
             loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
             error: (e, _) => SliverFillRemaining(child: Center(child: Text('Error: $e'))),
@@ -315,6 +286,7 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
     List<TransactionEntity> transactions,
     Map<String, dynamic> categoryMap,
     String currencySymbol,
+    int totalCount,
   ) {
     if (transactions.isEmpty) {
       return const SliverFillRemaining(
@@ -322,9 +294,25 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
       );
     }
 
+    final showViewAll = totalCount > 5;
+    final itemCount = transactions.length + (showViewAll ? 1 : 0);
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
+          if (index == transactions.length) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 24.0, left: 20, right: 20),
+              child: FilledButton.tonal(
+                onPressed: () => _openSearchPage(context),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('View All'),
+              ),
+            );
+          }
           final tx = transactions[index];
           final cat = categoryMap[tx.categoryId] as CategoryEntity?;
           return ListTile(
@@ -347,7 +335,7 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
             ),
           );
         },
-        childCount: transactions.length,
+        childCount: itemCount,
       ),
     );
   }

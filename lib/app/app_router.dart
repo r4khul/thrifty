@@ -15,6 +15,7 @@ import '../features/profile/presentation/profile_edit_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/transactions/presentation/add_edit_transaction_page.dart';
 import '../features/transactions/presentation/transaction_details_page.dart';
+import '../features/transactions/presentation/transaction_templates_page.dart';
 import '../features/transactions/presentation/transactions_page.dart';
 
 part 'app_router.g.dart';
@@ -132,6 +133,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileEditPage(),
+      ),
+      GoRoute(
+        path: '/templates',
+        builder: (context, state) => const TransactionTemplatesPage(),
       ),
     ],
   );

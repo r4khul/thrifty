@@ -100,7 +100,7 @@ class TransactionTemplatesPage extends ConsumerWidget {
     );
 
     if (confirm == true) {
-      ref
+      await ref
           .read(transactionTemplatesProvider.notifier)
           .deleteTemplate(template.id);
     }

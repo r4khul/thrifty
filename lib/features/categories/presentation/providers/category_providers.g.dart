@@ -34,7 +34,7 @@ final class CategoryControllerProvider
 }
 
 String _$categoryControllerHash() =>
-    r'920895d19c83f635a87a3fc8115a5635ddf8262a';
+    r'6d26da03b3625b15fcb30c5de9e91cb987649526';
 
 abstract class _$CategoryController
     extends $StreamNotifier<List<CategoryEntity>> {

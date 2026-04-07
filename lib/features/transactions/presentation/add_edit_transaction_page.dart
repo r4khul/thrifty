@@ -1093,7 +1093,8 @@ class _TemplatesSheet extends ConsumerWidget {
                         vertical: 8,
                       ),
                       itemCount: templates.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, index) =>
+                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final template = templates[index];
                         final cardColor = isDark

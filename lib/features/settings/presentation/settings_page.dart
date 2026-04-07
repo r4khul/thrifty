@@ -10,6 +10,7 @@ import 'package:thrifty/features/settings/presentation/providers/notification_pr
 import 'package:thrifty/features/settings/presentation/widgets/backend_url_sheet.dart';
 import 'package:thrifty/features/settings/presentation/widgets/currency_selector_sheet.dart';
 import 'package:thrifty/features/settings/presentation/widgets/language_selector_sheet.dart';
+import 'package:thrifty/features/transactions/presentation/transaction_templates_page.dart';
 import 'package:thrifty/l10n/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -157,6 +158,23 @@ class SettingsPage extends ConsumerWidget {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 builder: (context) => const CurrencySelectorSheet(),
+              );
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          // Transaction Templates
+          _SettingsTile(
+            icon: Icons.flash_on_rounded,
+            iconColor: Colors.amber,
+            title: 'Transaction Templates', // TODO: Add l10n
+            subtitle: 'Manage your quick transaction templates',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const TransactionTemplatesPage(),
+                ),
               );
             },
           ),
