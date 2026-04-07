@@ -16,11 +16,17 @@ import '../../categories/presentation/providers/category_providers.dart';
 import '../../categories/presentation/widgets/category_assets.dart';
 import '../domain/attachment_entity.dart';
 import '../domain/transaction_entity.dart';
+import '../domain/transaction_template_entity.dart';
 import 'providers/transaction_providers.dart';
+import 'providers/transaction_templates_provider.dart';
 
 /// Presentation: UI for adding or editing a transaction.
 class AddEditTransactionPage extends ConsumerStatefulWidget {
-  const AddEditTransactionPage({super.key, this.transactionId, this.initialAccountId});
+  const AddEditTransactionPage({
+    super.key,
+    this.transactionId,
+    this.initialAccountId,
+  });
 
   final String? transactionId;
   final String? initialAccountId;
@@ -150,6 +156,58 @@ class _AddEditTransactionPageState
     });
   }
 
+  void _showTemplatesSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return _TemplatesSheet(
+          onSelect: (template) {
+            setState(() {
+              if (template.amount != null) {
+                _amountController.text = template.amount.toString();
+              }
+              if (template.categoryId != null) {
+                _selectedCategoryId = template.categoryId;
+              }
+              if (template.accountId != null) {
+                _selectedAccountId = template.accountId;
+              }
+              if (template.note != null) {
+                _noteController.text = template.note!;
+              }
+              _isIncome = template.isIncome;
+            });
+            Navigator.pop(context);
+          },
+          onAutoSave: (template) {
+            setState(() {
+              if (template.amount != null) {
+                _amountController.text = template.amount.toString();
+              }
+              if (template.categoryId != null) {
+                _selectedCategoryId = template.categoryId;
+              }
+              if (template.accountId != null) {
+                _selectedAccountId = template.accountId;
+              }
+              if (template.note != null) {
+                _noteController.text = template.note!;
+              }
+              _isIncome = template.isIncome;
+            });
+            Navigator.pop(context);
+            // Must delay to allow state updates or just invoke save.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _save();
+            });
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _openFile(String path) async {
     try {
       final result = await OpenFilex.open(path);
@@ -189,6 +247,14 @@ class _AddEditTransactionPageState
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? l10n.editTransaction : l10n.newTransaction),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flash_on),
+            color: Colors.amber,
+            tooltip: 'Templates',
+            onPressed: () => _showTemplatesSheet(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -688,7 +754,9 @@ class _CategoryPickerState extends State<_CategoryPicker> {
                       hintText: 'Search...',
                       prefixIcon: const Icon(Icons.search_rounded),
                       filled: true,
-                      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                      fillColor: colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.5,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -714,9 +782,7 @@ class _CategoryPickerState extends State<_CategoryPicker> {
                 ? const Center(
                     child: Text(
                       'No categories found',
-                      style: TextStyle(
-                            color: AppColors.grey500,
-                          ),
+                      style: TextStyle(color: AppColors.grey500),
                     ),
                   )
                 : ListView.builder(
@@ -737,8 +803,9 @@ class _CategoryPickerState extends State<_CategoryPicker> {
                         ),
                         title: Text(cat.name),
                         selected: cat.id == widget.selectedId,
-                        selectedTileColor:
-                            colorScheme.primary.withValues(alpha: 0.1),
+                        selectedTileColor: colorScheme.primary.withValues(
+                          alpha: 0.1,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -917,6 +984,249 @@ class _TypeButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TemplatesSheet extends ConsumerWidget {
+  const _TemplatesSheet({required this.onSelect, required this.onAutoSave});
+
+  final void Function(TransactionTemplateEntity) onSelect;
+  final void Function(TransactionTemplateEntity) onAutoSave;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final templatesAsync = ref.watch(transactionTemplatesProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return DraggableScrollableSheet(
+      minChildSize: 0.4,
+      initialChildSize: 0.6,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.darkBackground
+                : AppColors.lightBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.grey300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Apply Template',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Select to pre-fill parameters',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.grey500),
+                        ),
+                      ],
+                    ),
+                    IconButton.filledTonal(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.push('/templates');
+                      },
+                      icon: const Icon(Icons.settings_outlined),
+                      tooltip: 'Manage Templates',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
+                        foregroundColor: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: templatesAsync.when(
+                  data: (templates) {
+                    if (templates.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.flash_off_rounded,
+                              size: 48,
+                              color: AppColors.grey300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No Templates found',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(color: AppColors.grey500),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      itemCount: templates.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final template = templates[index];
+                        final cardColor = isDark
+                            ? AppColors.darkCard
+                            : AppColors.lightCard;
+                        final borderColor = isDark
+                            ? AppColors.darkBorder
+                            : AppColors.lightBorder;
+                        final iconColor = template.isIncome
+                            ? AppColors.success
+                            : AppColors.error;
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: borderColor),
+                            boxShadow: isDark
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () =>
+                                  onSelect(template), // Normal tap: apply
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: iconColor.withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        template.isIncome
+                                            ? Icons.south_west_rounded
+                                            : Icons.north_east_rounded,
+                                        color: iconColor,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            template.name,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (template.amount != null) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '\$${template.amount!.toStringAsFixed(2)}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: AppColors.grey500,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ] else ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Variable amount',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: AppColors.grey500,
+                                                  ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // Thunder button: automatically saves it
+                                    Tooltip(
+                                      message: 'One-click apply & save',
+                                      child: IconButton.filled(
+                                        onPressed: () => onAutoSave(template),
+                                        icon: const Icon(
+                                          Icons.flash_on_rounded,
+                                          size: 18,
+                                        ),
+                                        style: IconButton.styleFrom(
+                                          backgroundColor:
+                                              Colors.amber.shade100,
+                                          foregroundColor:
+                                              Colors.amber.shade900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Center(child: Text('Error: $error')),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

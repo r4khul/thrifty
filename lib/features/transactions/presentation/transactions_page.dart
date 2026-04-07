@@ -90,6 +90,7 @@ class TransactionsPage extends ConsumerWidget {
       body: Column(
         children: [
           const DateRangeSelector(),
+          const SizedBox(height: 8),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
@@ -146,7 +147,7 @@ class TransactionsPage extends ConsumerWidget {
                             },
                             blendMode: BlendMode.dstIn,
                             child: ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
+                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
                               itemCount: transactions.length,
                               itemExtent: 72,
                               itemBuilder: (context, index) {
@@ -532,6 +533,7 @@ class _CashFlowSummarySection extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(width: 4),
                   Expanded(
@@ -548,7 +550,7 @@ class _CashFlowSummarySection extends ConsumerWidget {
                                 fontWeight: FontWeight.w700,
                               ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         RichText(
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -565,15 +567,18 @@ class _CashFlowSummarySection extends ConsumerWidget {
                                   color: isDark
                                       ? Colors.white
                                       : AppColors.grey800,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 26,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 24,
                                   height: 1.1,
                                 ),
                             children: [
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.top,
                                 child: Padding(
-                                  padding: const EdgeInsets.only(left: 6, top: 4),
+                                  padding: const EdgeInsets.only(
+                                    left: 6,
+                                    top: 4,
+                                  ),
                                   child: Text(
                                     '(${periodNetChange >= 0 ? '+' : '-'}${FormattingUtils.formatCompact(periodNetChange.abs(), symbol: currencySymbol)})',
                                     style: Theme.of(context)
@@ -592,106 +597,113 @@ class _CashFlowSummarySection extends ConsumerWidget {
                             ],
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _FlowMetricCard(
+                                label: l10n.income,
+                                value: _obscureText(
+                                  FormattingUtils.formatCompact(
+                                    totalIncome,
+                                    symbol: currencySymbol,
+                                  ),
+                                  isObscured,
+                                ),
+                                color: AppColors.success,
+                                icon: Icons.south_west_rounded,
+                                isDark: isDark,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _FlowMetricCard(
+                                label: l10n.expense,
+                                value: _obscureText(
+                                  FormattingUtils.formatCompact(
+                                    totalExpense,
+                                    symbol: currencySymbol,
+                                  ),
+                                  isObscured,
+                                ),
+                                color: AppColors.error,
+                                icon: Icons.north_east_rounded,
+                                isDark: isDark,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      ref.read(privacyModeProvider.notifier).toggle();
-                    },
-                    icon: Icon(
-                      isObscured
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 18,
-                      color: AppColors.grey500,
-                    ),
-                    tooltip: isObscured ? 'Show' : 'Hide',
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    onPressed: accountsList.isNotEmpty
-                        ? () {
-                            _showAccountSelector(
-                              context,
-                              ref,
-                              accountsList,
-                              selectedAccountId,
-                            );
-                          }
-                        : null,
-                    icon: const Icon(
-                      Icons.credit_card_rounded,
-                      size: 18,
-                      color: AppColors.grey500,
-                    ),
-                    tooltip: 'Select account',
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    onPressed: totalExpense > 0
-                        ? () {
-                            showModalBottomSheet<void>(
-                              context: context,
-                              isScrollControlled: true,
-                              showDragHandle: true,
-                              backgroundColor: Theme.of(context).canvasColor,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(24),
-                                ),
-                              ),
-                              builder: (context) => _WhereMoneyWentSheet(
-                                categoryBreakdown: categoryBreakdown,
-                                totalExpense: totalExpense,
-                                currencySymbol: currencySymbol,
-                              ),
-                            );
-                          }
-                        : null,
-                    icon: const Icon(
-                      Icons.pie_chart_outline_rounded,
-                      size: 18,
-                      color: AppColors.grey500,
-                    ),
-                    tooltip: l10n.whereYourMoneyGoes,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: _FlowMetricCard(
-                      label: l10n.income,
-                      value: _obscureText(
-                        FormattingUtils.formatCompact(
-                          totalIncome,
-                          symbol: currencySymbol,
+                  const SizedBox(width: 6),
+                  Column(
+                    children: [
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () {
+                          ref.read(privacyModeProvider.notifier).toggle();
+                        },
+                        icon: Icon(
+                          isObscured
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          size: 18,
+                          color: AppColors.grey500,
                         ),
-                        isObscured,
+                        tooltip: isObscured ? 'Show' : 'Hide',
                       ),
-                      color: AppColors.success,
-                      icon: Icons.south_west_rounded,
-                      isDark: isDark,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _FlowMetricCard(
-                      label: l10n.expense,
-                      value: _obscureText(
-                        FormattingUtils.formatCompact(
-                          totalExpense,
-                          symbol: currencySymbol,
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed: accountsList.isNotEmpty
+                            ? () {
+                                _showAccountSelector(
+                                  context,
+                                  ref,
+                                  accountsList,
+                                  selectedAccountId,
+                                );
+                              }
+                            : null,
+                        icon: const Icon(
+                          Icons.credit_card_rounded,
+                          size: 18,
+                          color: AppColors.grey500,
                         ),
-                        isObscured,
+                        tooltip: 'Select account',
                       ),
-                      color: AppColors.error,
-                      icon: Icons.north_east_rounded,
-                      isDark: isDark,
-                    ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed: totalExpense > 0
+                            ? () {
+                                showModalBottomSheet<void>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  showDragHandle: true,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).canvasColor,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(24),
+                                    ),
+                                  ),
+                                  builder: (context) => _WhereMoneyWentSheet(
+                                    categoryBreakdown: categoryBreakdown,
+                                    totalExpense: totalExpense,
+                                    currencySymbol: currencySymbol,
+                                  ),
+                                );
+                              }
+                            : null,
+                        icon: const Icon(
+                          Icons.pie_chart_outline_rounded,
+                          size: 18,
+                          color: AppColors.grey500,
+                        ),
+                        tooltip: l10n.whereYourMoneyGoes,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1394,6 +1406,14 @@ class _AppDrawer extends ConsumerWidget {
                 onTap: () {
                   Navigator.pop(context);
                   context.push('/analytics');
+                },
+              ),
+              _DrawerItem(
+                icon: Icons.flash_on_rounded,
+                label: 'Templates',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/templates');
                 },
               ),
               _DrawerItem(
