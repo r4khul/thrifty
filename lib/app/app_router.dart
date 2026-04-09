@@ -11,6 +11,8 @@ import '../features/auth/presentation/onboarding_setup_page.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/auth/presentation/splash_page.dart';
 import '../features/categories/presentation/categories_page.dart';
+import '../features/categories/presentation/budget_setup_page.dart';
+import '../features/categories/presentation/budget_alerts_page.dart';
 import '../features/profile/presentation/profile_edit_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/transactions/presentation/add_edit_transaction_page.dart';
@@ -125,6 +127,14 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/categories',
         builder: (context, state) => const CategoriesPage(),
+      ),
+      GoRoute(
+        path: '/budget-setup',
+        builder: (context, state) => const BudgetSetupPage(),
+      ),
+      GoRoute(
+        path: '/budget-alerts',
+        builder: (context, state) => const BudgetAlertsPage(),
       ),
       GoRoute(
         path: '/settings',

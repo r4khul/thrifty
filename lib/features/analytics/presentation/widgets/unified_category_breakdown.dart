@@ -151,16 +151,43 @@ class _UnifiedCategoryBreakdownState extends State<UnifiedCategoryBreakdown> {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
                                 child: LinearProgressIndicator(
-                                  value: cat.percentage / 100,
+                                  value: cat.budget != null && cat.budget! > 0
+                                      ? (cat.amount / cat.budget!).clamp(
+                                          0.0,
+                                          1.0,
+                                        )
+                                      : cat.percentage / 100,
                                   backgroundColor: isDark
                                       ? AppColors.grey800
                                       : AppColors.grey100,
                                   valueColor: AlwaysStoppedAnimation(
-                                    Color(cat.categoryColor),
+                                    cat.budget != null &&
+                                            cat.amount > cat.budget!
+                                        ? AppColors.error
+                                        : Color(cat.categoryColor),
                                   ),
                                   minHeight: 6,
                                 ),
                               ),
+                              if (cat.budget != null && cat.budget! > 0) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  cat.amount > cat.budget!
+                                      ? '${widget.currencySymbol}${_formatAmount(cat.amount - cat.budget!)} over budget'
+                                      : '${widget.currencySymbol}${_formatAmount(cat.budget! - cat.amount)} left of ${widget.currencySymbol}${_formatAmount(cat.budget!)}',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: cat.amount > cat.budget!
+                                        ? AppColors.error
+                                        : (isDark
+                                              ? AppColors.grey400
+                                              : AppColors.grey600),
+                                    fontSize: 11,
+                                    fontWeight: cat.amount > cat.budget!
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

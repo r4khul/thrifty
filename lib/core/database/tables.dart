@@ -54,6 +54,9 @@ class Categories extends Table {
   /// Color value (ARGB hex or int).
   IntColumn get color => integer()();
 
+  /// Optional budget limit for this category.
+  RealColumn get budget => real().nullable()();
+
   /// Synchronization state.
   BoolColumn get editedLocally =>
       boolean().withDefault(const Constant(false))();
@@ -133,6 +136,37 @@ class Attachments extends Table {
   IntColumn get sizeBytes => integer().nullable()();
 
   /// When the attachment was added.
+  IntColumn get createdAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// BudgetAlerts table schema.
+/// Tracks notifications when category spending exceeds budget thresholds (e.g. 80%, 95%).
+class BudgetAlerts extends Table {
+  /// Unique identifier. Primary Key.
+  TextColumn get id => text()();
+
+  /// The category this alert belongs to.
+  TextColumn get categoryId => text()();
+
+  /// The threshold percentage reached (e.g. 80, 95).
+  IntColumn get threshold => integer()();
+
+  /// Month and year of the alert (stored as YYYYMM).
+  IntColumn get period => integer()();
+
+  /// Whether the alert has been read by the user.
+  BoolColumn get isRead => boolean().withDefault(const Constant(false))();
+
+  /// Amount spent at the time of the alert.
+  RealColumn get amountSpent => real()();
+
+  /// Budget limit at the time of the alert.
+  RealColumn get budgetLimit => real()();
+
+  /// Metadata: Timestamp of when the alert was triggered.
   IntColumn get createdAt => integer()();
 
   @override

@@ -58,7 +58,7 @@ final class TransactionTemplateRepositoryProvider
 }
 
 String _$transactionTemplateRepositoryHash() =>
-    r'c6bf7008b661eb895d4d0e14d3bbc8b4806130f0';
+    r'671301147827e7fc2648378f8884de46eb9bbb96';
 
 @ProviderFor(TransactionTemplates)
 final transactionTemplatesProvider = TransactionTemplatesProvider._();

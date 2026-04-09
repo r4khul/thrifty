@@ -12,6 +12,7 @@ _CategoryEntity _$CategoryEntityFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       icon: json['icon'] as String,
       color: (json['color'] as num).toInt(),
+      budget: (json['budget'] as num?)?.toDouble(),
       editedLocally: json['editedLocally'] as bool? ?? false,
       updatedAt: json['updatedAt'] == null
           ? null
@@ -24,6 +25,7 @@ Map<String, dynamic> _$CategoryEntityToJson(_CategoryEntity instance) =>
       'name': instance.name,
       'icon': instance.icon,
       'color': instance.color,
+      'budget': instance.budget,
       'editedLocally': instance.editedLocally,
       'updatedAt': instance.updatedAt?.toIso8601String(),
     };

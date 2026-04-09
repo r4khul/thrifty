@@ -48,7 +48,7 @@ class CategoriesPage extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _CategoryForm(category: category),
+      builder: (context) => CategoryForm(category: category),
     );
   }
 }
@@ -129,7 +129,7 @@ class _CategoryTile extends ConsumerWidget {
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => _CategoryForm(category: category),
+                builder: (context) => CategoryForm(category: category),
               );
             },
           ),
@@ -404,20 +404,21 @@ class _CategoryUsageActionSheetState
   }
 }
 
-class _CategoryForm extends ConsumerStatefulWidget {
-  const _CategoryForm({this.category});
+class CategoryForm extends ConsumerStatefulWidget {
+  const CategoryForm({super.key, this.category});
 
   final CategoryEntity? category;
 
   @override
-  ConsumerState<_CategoryForm> createState() => _CategoryFormState();
+  ConsumerState<CategoryForm> createState() => _CategoryFormState();
 }
 
-class _CategoryFormState extends ConsumerState<_CategoryForm> {
+class _CategoryFormState extends ConsumerState<CategoryForm> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late String _selectedIcon;
   late Color _selectedColor;
+  late TextEditingController _budgetController;
 
   @override
   void initState() {
@@ -428,11 +429,17 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
     _selectedColor = widget.category != null
         ? Color(widget.category!.color)
         : CategoryAssets.palette.first;
+    _budgetController = TextEditingController(
+      text: widget.category?.budget != null
+          ? widget.category!.budget!.toStringAsFixed(0)
+          : '',
+    );
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _budgetController.dispose();
     super.dispose();
   }
 
@@ -543,17 +550,37 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
                 }).toList(),
               ),
             ),
+            const SizedBox(height: 24),
+            Text(
+              'Monthly Budget (Optional)',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _budgetController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'e.g., 500',
+                prefixIcon: Icon(Icons.account_balance_wallet_rounded),
+              ),
+            ),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
+                    final budgetText = _budgetController.text.trim();
                     final category = CategoryEntity(
                       id: widget.category?.id ?? '', // Handled in controller
                       name: _nameController.text.trim(),
                       icon: _selectedIcon,
                       color: _selectedColor.toARGB32(),
+                      budget: budgetText.isNotEmpty
+                          ? double.tryParse(budgetText)
+                          : null,
                     );
                     ref
                         .read(categoryControllerProvider.notifier)

@@ -280,7 +280,7 @@ as String?,
 /// @nodoc
 mixin _$CategorySpend {
 
- String get categoryId; String get categoryName; String get categoryIcon; int get categoryColor; double get amount; double get percentage;
+ String get categoryId; String get categoryName; String get categoryIcon; int get categoryColor; double get amount; double get percentage; double? get budget;
 /// Create a copy of CategorySpend
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -291,16 +291,16 @@ $CategorySpendCopyWith<CategorySpend> get copyWith => _$CategorySpendCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategorySpend&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryIcon, categoryIcon) || other.categoryIcon == categoryIcon)&&(identical(other.categoryColor, categoryColor) || other.categoryColor == categoryColor)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.percentage, percentage) || other.percentage == percentage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategorySpend&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryIcon, categoryIcon) || other.categoryIcon == categoryIcon)&&(identical(other.categoryColor, categoryColor) || other.categoryColor == categoryColor)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.budget, budget) || other.budget == budget));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,categoryId,categoryName,categoryIcon,categoryColor,amount,percentage);
+int get hashCode => Object.hash(runtimeType,categoryId,categoryName,categoryIcon,categoryColor,amount,percentage,budget);
 
 @override
 String toString() {
-  return 'CategorySpend(categoryId: $categoryId, categoryName: $categoryName, categoryIcon: $categoryIcon, categoryColor: $categoryColor, amount: $amount, percentage: $percentage)';
+  return 'CategorySpend(categoryId: $categoryId, categoryName: $categoryName, categoryIcon: $categoryIcon, categoryColor: $categoryColor, amount: $amount, percentage: $percentage, budget: $budget)';
 }
 
 
@@ -311,7 +311,7 @@ abstract mixin class $CategorySpendCopyWith<$Res>  {
   factory $CategorySpendCopyWith(CategorySpend value, $Res Function(CategorySpend) _then) = _$CategorySpendCopyWithImpl;
 @useResult
 $Res call({
- String categoryId, String categoryName, String categoryIcon, int categoryColor, double amount, double percentage
+ String categoryId, String categoryName, String categoryIcon, int categoryColor, double amount, double percentage, double? budget
 });
 
 
@@ -328,7 +328,7 @@ class _$CategorySpendCopyWithImpl<$Res>
 
 /// Create a copy of CategorySpend
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? categoryId = null,Object? categoryName = null,Object? categoryIcon = null,Object? categoryColor = null,Object? amount = null,Object? percentage = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? categoryId = null,Object? categoryName = null,Object? categoryIcon = null,Object? categoryColor = null,Object? amount = null,Object? percentage = null,Object? budget = freezed,}) {
   return _then(_self.copyWith(
 categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,categoryName: null == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
@@ -336,7 +336,8 @@ as String,categoryIcon: null == categoryIcon ? _self.categoryIcon : categoryIcon
 as String,categoryColor: null == categoryColor ? _self.categoryColor : categoryColor // ignore: cast_nullable_to_non_nullable
 as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
-as double,
+as double,budget: freezed == budget ? _self.budget : budget // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -421,10 +422,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String categoryId,  String categoryName,  String categoryIcon,  int categoryColor,  double amount,  double percentage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String categoryId,  String categoryName,  String categoryIcon,  int categoryColor,  double amount,  double percentage,  double? budget)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CategorySpend() when $default != null:
-return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.categoryColor,_that.amount,_that.percentage);case _:
+return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.categoryColor,_that.amount,_that.percentage,_that.budget);case _:
   return orElse();
 
 }
@@ -442,10 +443,10 @@ return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.cat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String categoryId,  String categoryName,  String categoryIcon,  int categoryColor,  double amount,  double percentage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String categoryId,  String categoryName,  String categoryIcon,  int categoryColor,  double amount,  double percentage,  double? budget)  $default,) {final _that = this;
 switch (_that) {
 case _CategorySpend():
-return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.categoryColor,_that.amount,_that.percentage);case _:
+return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.categoryColor,_that.amount,_that.percentage,_that.budget);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -462,10 +463,10 @@ return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.cat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String categoryId,  String categoryName,  String categoryIcon,  int categoryColor,  double amount,  double percentage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String categoryId,  String categoryName,  String categoryIcon,  int categoryColor,  double amount,  double percentage,  double? budget)?  $default,) {final _that = this;
 switch (_that) {
 case _CategorySpend() when $default != null:
-return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.categoryColor,_that.amount,_that.percentage);case _:
+return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.categoryColor,_that.amount,_that.percentage,_that.budget);case _:
   return null;
 
 }
@@ -477,7 +478,7 @@ return $default(_that.categoryId,_that.categoryName,_that.categoryIcon,_that.cat
 
 
 class _CategorySpend implements CategorySpend {
-  const _CategorySpend({required this.categoryId, required this.categoryName, required this.categoryIcon, required this.categoryColor, required this.amount, required this.percentage});
+  const _CategorySpend({required this.categoryId, required this.categoryName, required this.categoryIcon, required this.categoryColor, required this.amount, required this.percentage, this.budget});
   
 
 @override final  String categoryId;
@@ -486,6 +487,7 @@ class _CategorySpend implements CategorySpend {
 @override final  int categoryColor;
 @override final  double amount;
 @override final  double percentage;
+@override final  double? budget;
 
 /// Create a copy of CategorySpend
 /// with the given fields replaced by the non-null parameter values.
@@ -497,16 +499,16 @@ _$CategorySpendCopyWith<_CategorySpend> get copyWith => __$CategorySpendCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategorySpend&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryIcon, categoryIcon) || other.categoryIcon == categoryIcon)&&(identical(other.categoryColor, categoryColor) || other.categoryColor == categoryColor)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.percentage, percentage) || other.percentage == percentage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategorySpend&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryIcon, categoryIcon) || other.categoryIcon == categoryIcon)&&(identical(other.categoryColor, categoryColor) || other.categoryColor == categoryColor)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.percentage, percentage) || other.percentage == percentage)&&(identical(other.budget, budget) || other.budget == budget));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,categoryId,categoryName,categoryIcon,categoryColor,amount,percentage);
+int get hashCode => Object.hash(runtimeType,categoryId,categoryName,categoryIcon,categoryColor,amount,percentage,budget);
 
 @override
 String toString() {
-  return 'CategorySpend(categoryId: $categoryId, categoryName: $categoryName, categoryIcon: $categoryIcon, categoryColor: $categoryColor, amount: $amount, percentage: $percentage)';
+  return 'CategorySpend(categoryId: $categoryId, categoryName: $categoryName, categoryIcon: $categoryIcon, categoryColor: $categoryColor, amount: $amount, percentage: $percentage, budget: $budget)';
 }
 
 
@@ -517,7 +519,7 @@ abstract mixin class _$CategorySpendCopyWith<$Res> implements $CategorySpendCopy
   factory _$CategorySpendCopyWith(_CategorySpend value, $Res Function(_CategorySpend) _then) = __$CategorySpendCopyWithImpl;
 @override @useResult
 $Res call({
- String categoryId, String categoryName, String categoryIcon, int categoryColor, double amount, double percentage
+ String categoryId, String categoryName, String categoryIcon, int categoryColor, double amount, double percentage, double? budget
 });
 
 
@@ -534,7 +536,7 @@ class __$CategorySpendCopyWithImpl<$Res>
 
 /// Create a copy of CategorySpend
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? categoryId = null,Object? categoryName = null,Object? categoryIcon = null,Object? categoryColor = null,Object? amount = null,Object? percentage = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? categoryId = null,Object? categoryName = null,Object? categoryIcon = null,Object? categoryColor = null,Object? amount = null,Object? percentage = null,Object? budget = freezed,}) {
   return _then(_CategorySpend(
 categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,categoryName: null == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
@@ -542,7 +544,8 @@ as String,categoryIcon: null == categoryIcon ? _self.categoryIcon : categoryIcon
 as String,categoryColor: null == categoryColor ? _self.categoryColor : categoryColor // ignore: cast_nullable_to_non_nullable
 as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,percentage: null == percentage ? _self.percentage : percentage // ignore: cast_nullable_to_non_nullable
-as double,
+as double,budget: freezed == budget ? _self.budget : budget // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 

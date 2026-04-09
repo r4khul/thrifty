@@ -23,6 +23,7 @@ import '../domain/transaction_entity.dart';
 import 'providers/date_filter_provider.dart';
 import 'providers/transaction_providers.dart';
 import 'widgets/date_range_selector.dart';
+import '../../../core/database/database_providers.dart';
 import '../../../core/providers/privacy_provider.dart';
 
 /// Transactions Feature Presentation: List of financial transactions.
@@ -77,6 +78,24 @@ class TransactionsPage extends ConsumerWidget {
           ],
         ),
         actions: [
+          StreamBuilder<int>(
+            stream: ref.watch(budgetAlertDaoProvider).watchUnreadCount(),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+              return Badge.count(
+                count: count,
+                isLabelVisible: count > 0,
+                backgroundColor: AppColors.error,
+                textColor: Colors.white,
+                textStyle: const TextStyle(fontSize: 8),
+                child: IconButton(
+                  onPressed: () => context.push('/budget-alerts'),
+                  icon: const Icon(Icons.notifications_outlined),
+                  tooltip: 'Budget alerts',
+                ),
+              );
+            },
+          ),
           Builder(
             builder: (context) => IconButton(
               onPressed: () => Scaffold.of(context).openEndDrawer(),
@@ -871,6 +890,18 @@ class _WhereMoneyWentSheet extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.push('/budget-setup');
+                },
+                icon: const Icon(Icons.account_balance_wallet_rounded, size: 18),
+                label: const Text('Setup Budgets'),
               ),
             ),
           ],

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CategoryEntity {
 
- String get id; String get name; String get icon; int get color; bool get editedLocally; DateTime? get updatedAt;
+ String get id; String get name; String get icon; int get color; double? get budget; bool get editedLocally; DateTime? get updatedAt;
 /// Create a copy of CategoryEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CategoryEntityCopyWith<CategoryEntity> get copyWith => _$CategoryEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.editedLocally, editedLocally) || other.editedLocally == editedLocally)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.budget, budget) || other.budget == budget)&&(identical(other.editedLocally, editedLocally) || other.editedLocally == editedLocally)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,color,editedLocally,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,icon,color,budget,editedLocally,updatedAt);
 
 @override
 String toString() {
-  return 'CategoryEntity(id: $id, name: $name, icon: $icon, color: $color, editedLocally: $editedLocally, updatedAt: $updatedAt)';
+  return 'CategoryEntity(id: $id, name: $name, icon: $icon, color: $color, budget: $budget, editedLocally: $editedLocally, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CategoryEntityCopyWith<$Res>  {
   factory $CategoryEntityCopyWith(CategoryEntity value, $Res Function(CategoryEntity) _then) = _$CategoryEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String icon, int color, bool editedLocally, DateTime? updatedAt
+ String id, String name, String icon, int color, double? budget, bool editedLocally, DateTime? updatedAt
 });
 
 
@@ -65,13 +65,14 @@ class _$CategoryEntityCopyWithImpl<$Res>
 
 /// Create a copy of CategoryEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? editedLocally = null,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? budget = freezed,Object? editedLocally = null,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
-as int,editedLocally: null == editedLocally ? _self.editedLocally : editedLocally // ignore: cast_nullable_to_non_nullable
+as int,budget: freezed == budget ? _self.budget : budget // ignore: cast_nullable_to_non_nullable
+as double?,editedLocally: null == editedLocally ? _self.editedLocally : editedLocally // ignore: cast_nullable_to_non_nullable
 as bool,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -158,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String icon,  int color,  bool editedLocally,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String icon,  int color,  double? budget,  bool editedLocally,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CategoryEntity() when $default != null:
-return $default(_that.id,_that.name,_that.icon,_that.color,_that.editedLocally,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.icon,_that.color,_that.budget,_that.editedLocally,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -179,10 +180,10 @@ return $default(_that.id,_that.name,_that.icon,_that.color,_that.editedLocally,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String icon,  int color,  bool editedLocally,  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String icon,  int color,  double? budget,  bool editedLocally,  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _CategoryEntity():
-return $default(_that.id,_that.name,_that.icon,_that.color,_that.editedLocally,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.icon,_that.color,_that.budget,_that.editedLocally,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +200,10 @@ return $default(_that.id,_that.name,_that.icon,_that.color,_that.editedLocally,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String icon,  int color,  bool editedLocally,  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String icon,  int color,  double? budget,  bool editedLocally,  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _CategoryEntity() when $default != null:
-return $default(_that.id,_that.name,_that.icon,_that.color,_that.editedLocally,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.icon,_that.color,_that.budget,_that.editedLocally,_that.updatedAt);case _:
   return null;
 
 }
@@ -214,13 +215,14 @@ return $default(_that.id,_that.name,_that.icon,_that.color,_that.editedLocally,_
 @JsonSerializable()
 
 class _CategoryEntity implements CategoryEntity {
-  const _CategoryEntity({required this.id, required this.name, required this.icon, required this.color, this.editedLocally = false, this.updatedAt});
+  const _CategoryEntity({required this.id, required this.name, required this.icon, required this.color, this.budget, this.editedLocally = false, this.updatedAt});
   factory _CategoryEntity.fromJson(Map<String, dynamic> json) => _$CategoryEntityFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override final  String icon;
 @override final  int color;
+@override final  double? budget;
 @override@JsonKey() final  bool editedLocally;
 @override final  DateTime? updatedAt;
 
@@ -237,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.editedLocally, editedLocally) || other.editedLocally == editedLocally)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.budget, budget) || other.budget == budget)&&(identical(other.editedLocally, editedLocally) || other.editedLocally == editedLocally)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,color,editedLocally,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,icon,color,budget,editedLocally,updatedAt);
 
 @override
 String toString() {
-  return 'CategoryEntity(id: $id, name: $name, icon: $icon, color: $color, editedLocally: $editedLocally, updatedAt: $updatedAt)';
+  return 'CategoryEntity(id: $id, name: $name, icon: $icon, color: $color, budget: $budget, editedLocally: $editedLocally, updatedAt: $updatedAt)';
 }
 
 
@@ -257,7 +259,7 @@ abstract mixin class _$CategoryEntityCopyWith<$Res> implements $CategoryEntityCo
   factory _$CategoryEntityCopyWith(_CategoryEntity value, $Res Function(_CategoryEntity) _then) = __$CategoryEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String icon, int color, bool editedLocally, DateTime? updatedAt
+ String id, String name, String icon, int color, double? budget, bool editedLocally, DateTime? updatedAt
 });
 
 
@@ -274,13 +276,14 @@ class __$CategoryEntityCopyWithImpl<$Res>
 
 /// Create a copy of CategoryEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? editedLocally = null,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? budget = freezed,Object? editedLocally = null,Object? updatedAt = freezed,}) {
   return _then(_CategoryEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
-as int,editedLocally: null == editedLocally ? _self.editedLocally : editedLocally // ignore: cast_nullable_to_non_nullable
+as int,budget: freezed == budget ? _self.budget : budget // ignore: cast_nullable_to_non_nullable
+as double?,editedLocally: null == editedLocally ? _self.editedLocally : editedLocally // ignore: cast_nullable_to_non_nullable
 as bool,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));

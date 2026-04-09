@@ -89,4 +89,26 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
           ..where((t) => t.categoryId.equals(oldCategoryId)))
         .write(TransactionsCompanion(categoryId: Value(newCategoryId)));
   }
+
+  /// Calculates total expense for a specific category within a date range.
+  Future<double> getCategorySpendingInRange(
+    String categoryId,
+    DateTime start,
+    DateTime end,
+  ) async {
+    final amount = transactions.amount;
+    final query = selectOnly(transactions)
+      ..addColumns([amount.sum()])
+      ..where(
+        transactions.categoryId.equals(categoryId) &
+            transactions.timestamp.isBetweenValues(
+              start.millisecondsSinceEpoch,
+              end.millisecondsSinceEpoch,
+            ) &
+            transactions.amount.isSmallerThanValue(0.0),
+      );
+
+    final result = await query.map((row) => row.read(amount.sum())).getSingle();
+    return (result ?? 0.0).abs();
+  }
 }

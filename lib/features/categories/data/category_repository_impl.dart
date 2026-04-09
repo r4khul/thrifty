@@ -214,6 +214,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
       name: row.name,
       icon: row.icon,
       color: row.color,
+      budget: row.budget,
       editedLocally: row.editedLocally,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
     );
@@ -227,6 +228,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
       name: entity.name,
       icon: entity.icon,
       color: entity.color,
+      budget: entity.budget,
       editedLocally: true, // Default to true for local changes
       createdAt: entity.updatedAt?.millisecondsSinceEpoch ?? now,
       updatedAt: now,

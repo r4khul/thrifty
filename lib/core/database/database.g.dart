@@ -1257,6 +1257,15 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _budgetMeta = const VerificationMeta('budget');
+  @override
+  late final GeneratedColumn<double> budget = GeneratedColumn<double>(
+    'budget',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _editedLocallyMeta = const VerificationMeta(
     'editedLocally',
   );
@@ -1300,6 +1309,7 @@ class $CategoriesTable extends Categories
     name,
     icon,
     color,
+    budget,
     editedLocally,
     createdAt,
     updatedAt,
@@ -1344,6 +1354,12 @@ class $CategoriesTable extends Categories
       );
     } else if (isInserting) {
       context.missing(_colorMeta);
+    }
+    if (data.containsKey('budget')) {
+      context.handle(
+        _budgetMeta,
+        budget.isAcceptableOrUnknown(data['budget']!, _budgetMeta),
+      );
     }
     if (data.containsKey('edited_locally')) {
       context.handle(
@@ -1395,6 +1411,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.int,
         data['${effectivePrefix}color'],
       )!,
+      budget: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}budget'],
+      ),
       editedLocally: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}edited_locally'],
@@ -1429,6 +1449,9 @@ class Category extends DataClass implements Insertable<Category> {
   /// Color value (ARGB hex or int).
   final int color;
 
+  /// Optional budget limit for this category.
+  final double? budget;
+
   /// Synchronization state.
   final bool editedLocally;
 
@@ -1442,6 +1465,7 @@ class Category extends DataClass implements Insertable<Category> {
     required this.name,
     required this.icon,
     required this.color,
+    this.budget,
     required this.editedLocally,
     required this.createdAt,
     required this.updatedAt,
@@ -1453,6 +1477,9 @@ class Category extends DataClass implements Insertable<Category> {
     map['name'] = Variable<String>(name);
     map['icon'] = Variable<String>(icon);
     map['color'] = Variable<int>(color);
+    if (!nullToAbsent || budget != null) {
+      map['budget'] = Variable<double>(budget);
+    }
     map['edited_locally'] = Variable<bool>(editedLocally);
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -1465,6 +1492,9 @@ class Category extends DataClass implements Insertable<Category> {
       name: Value(name),
       icon: Value(icon),
       color: Value(color),
+      budget: budget == null && nullToAbsent
+          ? const Value.absent()
+          : Value(budget),
       editedLocally: Value(editedLocally),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1481,6 +1511,7 @@ class Category extends DataClass implements Insertable<Category> {
       name: serializer.fromJson<String>(json['name']),
       icon: serializer.fromJson<String>(json['icon']),
       color: serializer.fromJson<int>(json['color']),
+      budget: serializer.fromJson<double?>(json['budget']),
       editedLocally: serializer.fromJson<bool>(json['editedLocally']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
@@ -1494,6 +1525,7 @@ class Category extends DataClass implements Insertable<Category> {
       'name': serializer.toJson<String>(name),
       'icon': serializer.toJson<String>(icon),
       'color': serializer.toJson<int>(color),
+      'budget': serializer.toJson<double?>(budget),
       'editedLocally': serializer.toJson<bool>(editedLocally),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
@@ -1505,6 +1537,7 @@ class Category extends DataClass implements Insertable<Category> {
     String? name,
     String? icon,
     int? color,
+    Value<double?> budget = const Value.absent(),
     bool? editedLocally,
     int? createdAt,
     int? updatedAt,
@@ -1513,6 +1546,7 @@ class Category extends DataClass implements Insertable<Category> {
     name: name ?? this.name,
     icon: icon ?? this.icon,
     color: color ?? this.color,
+    budget: budget.present ? budget.value : this.budget,
     editedLocally: editedLocally ?? this.editedLocally,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1523,6 +1557,7 @@ class Category extends DataClass implements Insertable<Category> {
       name: data.name.present ? data.name.value : this.name,
       icon: data.icon.present ? data.icon.value : this.icon,
       color: data.color.present ? data.color.value : this.color,
+      budget: data.budget.present ? data.budget.value : this.budget,
       editedLocally: data.editedLocally.present
           ? data.editedLocally.value
           : this.editedLocally,
@@ -1538,6 +1573,7 @@ class Category extends DataClass implements Insertable<Category> {
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('color: $color, ')
+          ..write('budget: $budget, ')
           ..write('editedLocally: $editedLocally, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -1546,8 +1582,16 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, icon, color, editedLocally, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    icon,
+    color,
+    budget,
+    editedLocally,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1556,6 +1600,7 @@ class Category extends DataClass implements Insertable<Category> {
           other.name == this.name &&
           other.icon == this.icon &&
           other.color == this.color &&
+          other.budget == this.budget &&
           other.editedLocally == this.editedLocally &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -1566,6 +1611,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<String> name;
   final Value<String> icon;
   final Value<int> color;
+  final Value<double?> budget;
   final Value<bool> editedLocally;
   final Value<int> createdAt;
   final Value<int> updatedAt;
@@ -1575,6 +1621,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.name = const Value.absent(),
     this.icon = const Value.absent(),
     this.color = const Value.absent(),
+    this.budget = const Value.absent(),
     this.editedLocally = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1585,6 +1632,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     required String name,
     required String icon,
     required int color,
+    this.budget = const Value.absent(),
     this.editedLocally = const Value.absent(),
     required int createdAt,
     required int updatedAt,
@@ -1600,6 +1648,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<String>? name,
     Expression<String>? icon,
     Expression<int>? color,
+    Expression<double>? budget,
     Expression<bool>? editedLocally,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
@@ -1610,6 +1659,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       if (name != null) 'name': name,
       if (icon != null) 'icon': icon,
       if (color != null) 'color': color,
+      if (budget != null) 'budget': budget,
       if (editedLocally != null) 'edited_locally': editedLocally,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1622,6 +1672,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Value<String>? name,
     Value<String>? icon,
     Value<int>? color,
+    Value<double?>? budget,
     Value<bool>? editedLocally,
     Value<int>? createdAt,
     Value<int>? updatedAt,
@@ -1632,6 +1683,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       name: name ?? this.name,
       icon: icon ?? this.icon,
       color: color ?? this.color,
+      budget: budget ?? this.budget,
       editedLocally: editedLocally ?? this.editedLocally,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1653,6 +1705,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (color.present) {
       map['color'] = Variable<int>(color.value);
+    }
+    if (budget.present) {
+      map['budget'] = Variable<double>(budget.value);
     }
     if (editedLocally.present) {
       map['edited_locally'] = Variable<bool>(editedLocally.value);
@@ -1676,6 +1731,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('color: $color, ')
+          ..write('budget: $budget, ')
           ..write('editedLocally: $editedLocally, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -2173,6 +2229,542 @@ class AttachmentsCompanion extends UpdateCompanion<Attachment> {
   }
 }
 
+class $BudgetAlertsTable extends BudgetAlerts
+    with TableInfo<$BudgetAlertsTable, BudgetAlert> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BudgetAlertsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _thresholdMeta = const VerificationMeta(
+    'threshold',
+  );
+  @override
+  late final GeneratedColumn<int> threshold = GeneratedColumn<int>(
+    'threshold',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _periodMeta = const VerificationMeta('period');
+  @override
+  late final GeneratedColumn<int> period = GeneratedColumn<int>(
+    'period',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isReadMeta = const VerificationMeta('isRead');
+  @override
+  late final GeneratedColumn<bool> isRead = GeneratedColumn<bool>(
+    'is_read',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_read" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _amountSpentMeta = const VerificationMeta(
+    'amountSpent',
+  );
+  @override
+  late final GeneratedColumn<double> amountSpent = GeneratedColumn<double>(
+    'amount_spent',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _budgetLimitMeta = const VerificationMeta(
+    'budgetLimit',
+  );
+  @override
+  late final GeneratedColumn<double> budgetLimit = GeneratedColumn<double>(
+    'budget_limit',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    categoryId,
+    threshold,
+    period,
+    isRead,
+    amountSpent,
+    budgetLimit,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'budget_alerts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BudgetAlert> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('threshold')) {
+      context.handle(
+        _thresholdMeta,
+        threshold.isAcceptableOrUnknown(data['threshold']!, _thresholdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_thresholdMeta);
+    }
+    if (data.containsKey('period')) {
+      context.handle(
+        _periodMeta,
+        period.isAcceptableOrUnknown(data['period']!, _periodMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_periodMeta);
+    }
+    if (data.containsKey('is_read')) {
+      context.handle(
+        _isReadMeta,
+        isRead.isAcceptableOrUnknown(data['is_read']!, _isReadMeta),
+      );
+    }
+    if (data.containsKey('amount_spent')) {
+      context.handle(
+        _amountSpentMeta,
+        amountSpent.isAcceptableOrUnknown(
+          data['amount_spent']!,
+          _amountSpentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountSpentMeta);
+    }
+    if (data.containsKey('budget_limit')) {
+      context.handle(
+        _budgetLimitMeta,
+        budgetLimit.isAcceptableOrUnknown(
+          data['budget_limit']!,
+          _budgetLimitMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_budgetLimitMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BudgetAlert map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BudgetAlert(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      )!,
+      threshold: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}threshold'],
+      )!,
+      period: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}period'],
+      )!,
+      isRead: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_read'],
+      )!,
+      amountSpent: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount_spent'],
+      )!,
+      budgetLimit: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}budget_limit'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $BudgetAlertsTable createAlias(String alias) {
+    return $BudgetAlertsTable(attachedDatabase, alias);
+  }
+}
+
+class BudgetAlert extends DataClass implements Insertable<BudgetAlert> {
+  /// Unique identifier. Primary Key.
+  final String id;
+
+  /// The category this alert belongs to.
+  final String categoryId;
+
+  /// The threshold percentage reached (e.g. 80, 95).
+  final int threshold;
+
+  /// Month and year of the alert (stored as YYYYMM).
+  final int period;
+
+  /// Whether the alert has been read by the user.
+  final bool isRead;
+
+  /// Amount spent at the time of the alert.
+  final double amountSpent;
+
+  /// Budget limit at the time of the alert.
+  final double budgetLimit;
+
+  /// Metadata: Timestamp of when the alert was triggered.
+  final int createdAt;
+  const BudgetAlert({
+    required this.id,
+    required this.categoryId,
+    required this.threshold,
+    required this.period,
+    required this.isRead,
+    required this.amountSpent,
+    required this.budgetLimit,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['category_id'] = Variable<String>(categoryId);
+    map['threshold'] = Variable<int>(threshold);
+    map['period'] = Variable<int>(period);
+    map['is_read'] = Variable<bool>(isRead);
+    map['amount_spent'] = Variable<double>(amountSpent);
+    map['budget_limit'] = Variable<double>(budgetLimit);
+    map['created_at'] = Variable<int>(createdAt);
+    return map;
+  }
+
+  BudgetAlertsCompanion toCompanion(bool nullToAbsent) {
+    return BudgetAlertsCompanion(
+      id: Value(id),
+      categoryId: Value(categoryId),
+      threshold: Value(threshold),
+      period: Value(period),
+      isRead: Value(isRead),
+      amountSpent: Value(amountSpent),
+      budgetLimit: Value(budgetLimit),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory BudgetAlert.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BudgetAlert(
+      id: serializer.fromJson<String>(json['id']),
+      categoryId: serializer.fromJson<String>(json['categoryId']),
+      threshold: serializer.fromJson<int>(json['threshold']),
+      period: serializer.fromJson<int>(json['period']),
+      isRead: serializer.fromJson<bool>(json['isRead']),
+      amountSpent: serializer.fromJson<double>(json['amountSpent']),
+      budgetLimit: serializer.fromJson<double>(json['budgetLimit']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'categoryId': serializer.toJson<String>(categoryId),
+      'threshold': serializer.toJson<int>(threshold),
+      'period': serializer.toJson<int>(period),
+      'isRead': serializer.toJson<bool>(isRead),
+      'amountSpent': serializer.toJson<double>(amountSpent),
+      'budgetLimit': serializer.toJson<double>(budgetLimit),
+      'createdAt': serializer.toJson<int>(createdAt),
+    };
+  }
+
+  BudgetAlert copyWith({
+    String? id,
+    String? categoryId,
+    int? threshold,
+    int? period,
+    bool? isRead,
+    double? amountSpent,
+    double? budgetLimit,
+    int? createdAt,
+  }) => BudgetAlert(
+    id: id ?? this.id,
+    categoryId: categoryId ?? this.categoryId,
+    threshold: threshold ?? this.threshold,
+    period: period ?? this.period,
+    isRead: isRead ?? this.isRead,
+    amountSpent: amountSpent ?? this.amountSpent,
+    budgetLimit: budgetLimit ?? this.budgetLimit,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  BudgetAlert copyWithCompanion(BudgetAlertsCompanion data) {
+    return BudgetAlert(
+      id: data.id.present ? data.id.value : this.id,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      threshold: data.threshold.present ? data.threshold.value : this.threshold,
+      period: data.period.present ? data.period.value : this.period,
+      isRead: data.isRead.present ? data.isRead.value : this.isRead,
+      amountSpent: data.amountSpent.present
+          ? data.amountSpent.value
+          : this.amountSpent,
+      budgetLimit: data.budgetLimit.present
+          ? data.budgetLimit.value
+          : this.budgetLimit,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BudgetAlert(')
+          ..write('id: $id, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('threshold: $threshold, ')
+          ..write('period: $period, ')
+          ..write('isRead: $isRead, ')
+          ..write('amountSpent: $amountSpent, ')
+          ..write('budgetLimit: $budgetLimit, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    categoryId,
+    threshold,
+    period,
+    isRead,
+    amountSpent,
+    budgetLimit,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BudgetAlert &&
+          other.id == this.id &&
+          other.categoryId == this.categoryId &&
+          other.threshold == this.threshold &&
+          other.period == this.period &&
+          other.isRead == this.isRead &&
+          other.amountSpent == this.amountSpent &&
+          other.budgetLimit == this.budgetLimit &&
+          other.createdAt == this.createdAt);
+}
+
+class BudgetAlertsCompanion extends UpdateCompanion<BudgetAlert> {
+  final Value<String> id;
+  final Value<String> categoryId;
+  final Value<int> threshold;
+  final Value<int> period;
+  final Value<bool> isRead;
+  final Value<double> amountSpent;
+  final Value<double> budgetLimit;
+  final Value<int> createdAt;
+  final Value<int> rowid;
+  const BudgetAlertsCompanion({
+    this.id = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.threshold = const Value.absent(),
+    this.period = const Value.absent(),
+    this.isRead = const Value.absent(),
+    this.amountSpent = const Value.absent(),
+    this.budgetLimit = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BudgetAlertsCompanion.insert({
+    required String id,
+    required String categoryId,
+    required int threshold,
+    required int period,
+    this.isRead = const Value.absent(),
+    required double amountSpent,
+    required double budgetLimit,
+    required int createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       categoryId = Value(categoryId),
+       threshold = Value(threshold),
+       period = Value(period),
+       amountSpent = Value(amountSpent),
+       budgetLimit = Value(budgetLimit),
+       createdAt = Value(createdAt);
+  static Insertable<BudgetAlert> custom({
+    Expression<String>? id,
+    Expression<String>? categoryId,
+    Expression<int>? threshold,
+    Expression<int>? period,
+    Expression<bool>? isRead,
+    Expression<double>? amountSpent,
+    Expression<double>? budgetLimit,
+    Expression<int>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (categoryId != null) 'category_id': categoryId,
+      if (threshold != null) 'threshold': threshold,
+      if (period != null) 'period': period,
+      if (isRead != null) 'is_read': isRead,
+      if (amountSpent != null) 'amount_spent': amountSpent,
+      if (budgetLimit != null) 'budget_limit': budgetLimit,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BudgetAlertsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? categoryId,
+    Value<int>? threshold,
+    Value<int>? period,
+    Value<bool>? isRead,
+    Value<double>? amountSpent,
+    Value<double>? budgetLimit,
+    Value<int>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return BudgetAlertsCompanion(
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      threshold: threshold ?? this.threshold,
+      period: period ?? this.period,
+      isRead: isRead ?? this.isRead,
+      amountSpent: amountSpent ?? this.amountSpent,
+      budgetLimit: budgetLimit ?? this.budgetLimit,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (threshold.present) {
+      map['threshold'] = Variable<int>(threshold.value);
+    }
+    if (period.present) {
+      map['period'] = Variable<int>(period.value);
+    }
+    if (isRead.present) {
+      map['is_read'] = Variable<bool>(isRead.value);
+    }
+    if (amountSpent.present) {
+      map['amount_spent'] = Variable<double>(amountSpent.value);
+    }
+    if (budgetLimit.present) {
+      map['budget_limit'] = Variable<double>(budgetLimit.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BudgetAlertsCompanion(')
+          ..write('id: $id, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('threshold: $threshold, ')
+          ..write('period: $period, ')
+          ..write('isRead: $isRead, ')
+          ..write('amountSpent: $amountSpent, ')
+          ..write('budgetLimit: $budgetLimit, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2180,6 +2772,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
+  late final $BudgetAlertsTable budgetAlerts = $BudgetAlertsTable(this);
   late final Index txFilterIdx = Index(
     'tx_filter_idx',
     'CREATE INDEX tx_filter_idx ON transactions (timestamp, category_id)',
@@ -2190,6 +2783,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final CategoryDao categoryDao = CategoryDao(this as AppDatabase);
   late final AttachmentDao attachmentDao = AttachmentDao(this as AppDatabase);
+  late final BudgetAlertDao budgetAlertDao = BudgetAlertDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2199,6 +2795,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     transactions,
     categories,
     attachments,
+    budgetAlerts,
     txFilterIdx,
   ];
 }
@@ -2890,6 +3487,7 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       required String name,
       required String icon,
       required int color,
+      Value<double?> budget,
       Value<bool> editedLocally,
       required int createdAt,
       required int updatedAt,
@@ -2901,6 +3499,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> icon,
       Value<int> color,
+      Value<double?> budget,
       Value<bool> editedLocally,
       Value<int> createdAt,
       Value<int> updatedAt,
@@ -2933,6 +3532,11 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<int> get color => $composableBuilder(
     column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get budget => $composableBuilder(
+    column: $table.budget,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2981,6 +3585,11 @@ class $$CategoriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get budget => $composableBuilder(
+    column: $table.budget,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get editedLocally => $composableBuilder(
     column: $table.editedLocally,
     builder: (column) => ColumnOrderings(column),
@@ -3017,6 +3626,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<double> get budget =>
+      $composableBuilder(column: $table.budget, builder: (column) => column);
 
   GeneratedColumn<bool> get editedLocally => $composableBuilder(
     column: $table.editedLocally,
@@ -3062,6 +3674,7 @@ class $$CategoriesTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> icon = const Value.absent(),
                 Value<int> color = const Value.absent(),
+                Value<double?> budget = const Value.absent(),
                 Value<bool> editedLocally = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
@@ -3071,6 +3684,7 @@ class $$CategoriesTableTableManager
                 name: name,
                 icon: icon,
                 color: color,
+                budget: budget,
                 editedLocally: editedLocally,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -3082,6 +3696,7 @@ class $$CategoriesTableTableManager
                 required String name,
                 required String icon,
                 required int color,
+                Value<double?> budget = const Value.absent(),
                 Value<bool> editedLocally = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
@@ -3091,6 +3706,7 @@ class $$CategoriesTableTableManager
                 name: name,
                 icon: icon,
                 color: color,
+                budget: budget,
                 editedLocally: editedLocally,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -3475,6 +4091,269 @@ typedef $$AttachmentsTableProcessedTableManager =
       Attachment,
       PrefetchHooks Function({bool transactionId})
     >;
+typedef $$BudgetAlertsTableCreateCompanionBuilder =
+    BudgetAlertsCompanion Function({
+      required String id,
+      required String categoryId,
+      required int threshold,
+      required int period,
+      Value<bool> isRead,
+      required double amountSpent,
+      required double budgetLimit,
+      required int createdAt,
+      Value<int> rowid,
+    });
+typedef $$BudgetAlertsTableUpdateCompanionBuilder =
+    BudgetAlertsCompanion Function({
+      Value<String> id,
+      Value<String> categoryId,
+      Value<int> threshold,
+      Value<int> period,
+      Value<bool> isRead,
+      Value<double> amountSpent,
+      Value<double> budgetLimit,
+      Value<int> createdAt,
+      Value<int> rowid,
+    });
+
+class $$BudgetAlertsTableFilterComposer
+    extends Composer<_$AppDatabase, $BudgetAlertsTable> {
+  $$BudgetAlertsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get threshold => $composableBuilder(
+    column: $table.threshold,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get period => $composableBuilder(
+    column: $table.period,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isRead => $composableBuilder(
+    column: $table.isRead,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amountSpent => $composableBuilder(
+    column: $table.amountSpent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get budgetLimit => $composableBuilder(
+    column: $table.budgetLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BudgetAlertsTableOrderingComposer
+    extends Composer<_$AppDatabase, $BudgetAlertsTable> {
+  $$BudgetAlertsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get threshold => $composableBuilder(
+    column: $table.threshold,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get period => $composableBuilder(
+    column: $table.period,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isRead => $composableBuilder(
+    column: $table.isRead,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amountSpent => $composableBuilder(
+    column: $table.amountSpent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get budgetLimit => $composableBuilder(
+    column: $table.budgetLimit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BudgetAlertsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BudgetAlertsTable> {
+  $$BudgetAlertsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get threshold =>
+      $composableBuilder(column: $table.threshold, builder: (column) => column);
+
+  GeneratedColumn<int> get period =>
+      $composableBuilder(column: $table.period, builder: (column) => column);
+
+  GeneratedColumn<bool> get isRead =>
+      $composableBuilder(column: $table.isRead, builder: (column) => column);
+
+  GeneratedColumn<double> get amountSpent => $composableBuilder(
+    column: $table.amountSpent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get budgetLimit => $composableBuilder(
+    column: $table.budgetLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$BudgetAlertsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BudgetAlertsTable,
+          BudgetAlert,
+          $$BudgetAlertsTableFilterComposer,
+          $$BudgetAlertsTableOrderingComposer,
+          $$BudgetAlertsTableAnnotationComposer,
+          $$BudgetAlertsTableCreateCompanionBuilder,
+          $$BudgetAlertsTableUpdateCompanionBuilder,
+          (
+            BudgetAlert,
+            BaseReferences<_$AppDatabase, $BudgetAlertsTable, BudgetAlert>,
+          ),
+          BudgetAlert,
+          PrefetchHooks Function()
+        > {
+  $$BudgetAlertsTableTableManager(_$AppDatabase db, $BudgetAlertsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BudgetAlertsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BudgetAlertsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BudgetAlertsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> categoryId = const Value.absent(),
+                Value<int> threshold = const Value.absent(),
+                Value<int> period = const Value.absent(),
+                Value<bool> isRead = const Value.absent(),
+                Value<double> amountSpent = const Value.absent(),
+                Value<double> budgetLimit = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BudgetAlertsCompanion(
+                id: id,
+                categoryId: categoryId,
+                threshold: threshold,
+                period: period,
+                isRead: isRead,
+                amountSpent: amountSpent,
+                budgetLimit: budgetLimit,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String categoryId,
+                required int threshold,
+                required int period,
+                Value<bool> isRead = const Value.absent(),
+                required double amountSpent,
+                required double budgetLimit,
+                required int createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => BudgetAlertsCompanion.insert(
+                id: id,
+                categoryId: categoryId,
+                threshold: threshold,
+                period: period,
+                isRead: isRead,
+                amountSpent: amountSpent,
+                budgetLimit: budgetLimit,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BudgetAlertsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BudgetAlertsTable,
+      BudgetAlert,
+      $$BudgetAlertsTableFilterComposer,
+      $$BudgetAlertsTableOrderingComposer,
+      $$BudgetAlertsTableAnnotationComposer,
+      $$BudgetAlertsTableCreateCompanionBuilder,
+      $$BudgetAlertsTableUpdateCompanionBuilder,
+      (
+        BudgetAlert,
+        BaseReferences<_$AppDatabase, $BudgetAlertsTable, BudgetAlert>,
+      ),
+      BudgetAlert,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3487,4 +4366,6 @@ class $AppDatabaseManager {
       $$CategoriesTableTableManager(_db, _db.categories);
   $$AttachmentsTableTableManager get attachments =>
       $$AttachmentsTableTableManager(_db, _db.attachments);
+  $$BudgetAlertsTableTableManager get budgetAlerts =>
+      $$BudgetAlertsTableTableManager(_db, _db.budgetAlerts);
 }

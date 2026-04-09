@@ -10,6 +10,7 @@ abstract class CategoryEntity with _$CategoryEntity {
     required String name,
     required String icon,
     required int color,
+    double? budget,
     @Default(false) bool editedLocally,
     DateTime? updatedAt,
   }) = _CategoryEntity;

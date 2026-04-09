@@ -172,6 +172,7 @@ class FinancialAggregator {
             categoryColor: cat.color,
             amount: entry.value,
             percentage: (entry.value / totalExpense) * 100,
+            budget: cat.budget,
           ),
         );
       } else {

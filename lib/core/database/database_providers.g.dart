@@ -298,3 +298,49 @@ final class AccountDaoProvider
 }
 
 String _$accountDaoHash() => r'96e41bb5f96f9637bb3ffebd344a47b3a3526194';
+
+/// Provider for [BudgetAlertDao].
+
+@ProviderFor(budgetAlertDao)
+final budgetAlertDaoProvider = BudgetAlertDaoProvider._();
+
+/// Provider for [BudgetAlertDao].
+
+final class BudgetAlertDaoProvider
+    extends $FunctionalProvider<BudgetAlertDao, BudgetAlertDao, BudgetAlertDao>
+    with $Provider<BudgetAlertDao> {
+  /// Provider for [BudgetAlertDao].
+  BudgetAlertDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'budgetAlertDaoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$budgetAlertDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<BudgetAlertDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  BudgetAlertDao create(Ref ref) {
+    return budgetAlertDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BudgetAlertDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BudgetAlertDao>(value),
+    );
+  }
+}
+
+String _$budgetAlertDaoHash() => r'0f77c1f4531255069efcf2815e0e14e96180dc06';

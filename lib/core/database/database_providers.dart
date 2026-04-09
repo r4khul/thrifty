@@ -10,6 +10,7 @@ import 'daos/account_dao.dart';
 import 'daos/attachment_dao.dart';
 import 'daos/category_dao.dart';
 import 'daos/transaction_dao.dart';
+import 'daos/budget_alert_dao.dart';
 import 'database.dart';
 
 part 'database_providers.g.dart';
@@ -80,4 +81,11 @@ AttachmentDao attachmentDao(Ref ref) {
 AccountDao accountDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return AccountDao(db);
+}
+
+/// Provider for [BudgetAlertDao].
+@riverpod
+BudgetAlertDao budgetAlertDao(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return BudgetAlertDao(db);
 }

@@ -34,6 +34,7 @@ abstract class CategorySpend with _$CategorySpend {
     required int categoryColor,
     required double amount,
     required double percentage,
+    double? budget,
   }) = _CategorySpend;
 }
 

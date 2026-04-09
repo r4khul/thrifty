@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/transaction_repository_provider.dart';
 import '../../domain/transaction_entity.dart';
-import 'date_filter_provider.dart';
+import '../../presentation/providers/date_filter_provider.dart';
+import '../../../categories/presentation/providers/budget_alert_service.dart';
 
 part 'transaction_providers.g.dart';
 
@@ -54,6 +57,13 @@ class TransactionController extends _$TransactionController {
     tx = tx.copyWith(amount: isIncome ? absAmount : -absAmount);
 
     await repository.upsert(tx);
+
+    // Trigger budget check after adding or updating an expense
+    if (!isIncome) {
+      unawaited(
+        ref.read(budgetAlertServiceProvider.notifier).checkBudget(tx.categoryId),
+      );
+    }
   }
 
   /// Deletes a transaction by ID.
