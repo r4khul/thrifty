@@ -22,7 +22,6 @@ class DateRangeSelector extends ConsumerWidget {
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          cacheExtent: 200,
           children: [
             _IconChip(
               icon: Icons.calendar_today_rounded,
