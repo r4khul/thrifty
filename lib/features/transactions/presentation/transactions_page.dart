@@ -16,6 +16,7 @@ import '../../categories/domain/category_entity.dart';
 import '../../categories/presentation/providers/category_map_provider.dart';
 import '../../categories/presentation/widgets/category_assets.dart';
 import '../../profile/presentation/providers/user_profile_provider.dart';
+import '../../accounts/presentation/account_assets.dart';
 import '../../accounts/presentation/providers/account_providers.dart';
 import '../../accounts/domain/account_entity.dart';
 import '../data/transaction_repository_provider.dart';
@@ -434,9 +435,8 @@ class _CashFlowSummarySection extends ConsumerWidget {
                             leading: CircleAvatar(
                               backgroundColor: color,
                               child: Icon(
-                                IconData(
+                                AccountAssets.getIcon(
                                   account.iconCodePoint,
-                                  fontFamily: 'MaterialIcons',
                                 ),
                                 color: Colors.white,
                               ),

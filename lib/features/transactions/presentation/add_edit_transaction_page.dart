@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../features/settings/presentation/providers/currency_provider.dart';
 import '../../accounts/domain/account_entity.dart';
+import '../../accounts/presentation/account_assets.dart';
 import '../../accounts/presentation/providers/account_providers.dart';
 
 import '../../categories/domain/category_entity.dart';
@@ -850,7 +851,7 @@ class _AccountSelector extends StatelessWidget {
           children: [
             if (selected != null) ...[
               Icon(
-                IconData(selected.iconCodePoint, fontFamily: 'MaterialIcons'),
+                AccountAssets.getIcon(selected.iconCodePoint),
                 color: Color(selected.colorValue),
                 size: 20,
               ),
@@ -916,7 +917,7 @@ class _AccountSelector extends StatelessWidget {
               Navigator.pop(context);
             },
             leading: Icon(
-              IconData(account.iconCodePoint, fontFamily: 'MaterialIcons'),
+              AccountAssets.getIcon(account.iconCodePoint),
               color: Color(account.colorValue),
             ),
             title: Text(account.name),
